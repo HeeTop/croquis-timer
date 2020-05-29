@@ -21,6 +21,17 @@
             "js/background.js"
         ]
     },
+    "content_scripts": [
+        {
+            "matches": [
+                "https://www.google.com/search?*"
+            ],
+            "js": [
+                "js/content.js"
+            ],
+            "run_at": "document_idle"
+        }
+    ],
     "permissions": [
         "<all_urls>"
     ]
