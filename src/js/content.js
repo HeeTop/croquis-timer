@@ -17,3 +17,19 @@ function clickTag(index, interval = 5 * 1000) {
 }
 
 setTimeout(()=>clickTag(0), 5000);
+
+const layer = document.createElement("div");
+layer.id = "croquisTimerLayer";
+layer.style.position = "absolute";
+layer.style.top = "0";
+layer.style.left = "0";
+layer.style.width = "100%";
+layer.style.height = "100%";
+layer.style.zIndex = "1147483646";
+layer.style.backgroundColor = "green";
+layer.style.visibility = "visible";
+
+const image = document.createElement("img");
+image.src = `https://lh3.googleusercontent.com/proxy/xmxrPSyYqHbwTKMHCyebJnkcjjb-wFZl_bj6cA922jhh4JgTrI_ku9gXfDgyy1M0G2lqIBgomf5bajhu9SO5keWsKlPjO0kFtcHKXKQICuNIpY36OlvlftwWM-FoJkhlPqdrX5JBn23eIZrYbSAsvcDD3UlNX6jjtKW1lmsw8ggLI3BDgrRD0iV5tJVOQ_Heue22Yc7V2y76yyMpgbQ0M5A8HB-jqn32OUHnKZpaB1QW7fZomojbuFf79IQEVNh9XmIcetezPL1AbsbNKg2_XJhqvk1QyAXzxwrUpnQDdNOnlY7JHek1khQNhUbYM_Go69S0NhJUhQ`;
+// document.body.appendChild(layer);
+// layer.appendChild(image);
