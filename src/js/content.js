@@ -11,7 +11,7 @@ layer.style.width = `100%`;
 layer.style.height = `100%`;
 layer.style.zIndex = `1147483646`;
 layer.style.backgroundColor = `black`;
-
+layer.style.visibility = `hidden`;
 layer.style.position = `fixed`;
 
 mainImageEl.style.display = `block`;
@@ -54,16 +54,19 @@ function init(status = true, interval = 5 * 1000) {
   }
 }
 
-chrome.storage.onChanged.addListener(function(changes, namespace) {
-  for (var key in changes) {
-  var storageChange = changes[key];
-  init(storageChange.newValue);
+chrome.storage.local.get(['status'], function(result) {
+  if (result.length === 0 || result[`status`] === false) {
+    init(false);
+  } else {
+    init(true);
+  }
+});
 
-  console.log('Storage key "%s" in namespace "%s" changed. ' +
-              'Old value was "%s", new value is "%s".',
-              key,
-              namespace,
-              storageChange.oldValue,
-              storageChange.newValue);
+chrome.storage.onChanged.addListener(function(changes, namespace) {
+  for (const key in changes) {
+    if (key === `status`) {
+      const storageChange = changes[key];
+      init(storageChange.newValue);
+    }
   }
 });
