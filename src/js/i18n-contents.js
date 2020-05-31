@@ -6,7 +6,7 @@
   if (content) {
     content.forEach(node => {
       const key = node.getAttribute(`i18n-content`);
-      const value = whale.i18n.getMessage(key);
+      const value = chrome.i18n.getMessage(key);
 
       node.innerHTML = value;
     });
