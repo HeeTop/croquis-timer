@@ -1,10 +1,14 @@
+const observer = new MutationObserver(mutationCallback);
 const imageAEls = document.querySelectorAll(`#islrg > div.islrc > div > a.wXeWr.islib.nfEiy.mM5pbd`);
 const mainImageEl = document.createElement(`img`);
 const layer = document.createElement(`div`);
 const restTimeEl = document.createElement(`div`);
+const preBtn = document.createElement(`button`);
+const nextBtn = document.createElement(`button`);
 let timeIds = [];
 let restTimeIds = [];
-let interval = 30*1000;
+let interval = 5*1000;
+let preImageUrls = [];
 
 function initLayer() {
   layer.id = `croquisTimerLayer`;
@@ -17,11 +21,13 @@ function initLayer() {
   layer.style.backgroundColor = `black`;
   layer.style.visibility = `hidden`;
   layer.style.position = `fixed`;
+  document.body.appendChild(layer);
 }
 initLayer();
 
 function initRestTime() {
   restTimeEl.style.color = `white`;
+  layer.appendChild(restTimeEl);
 }
 initRestTime();
 
@@ -29,26 +35,19 @@ function initMainImage() {
   mainImageEl.style.display = `block`;
   mainImageEl.style.margin = `auto`;
   mainImageEl.style.width = `50%`;
+  layer.appendChild(mainImageEl);
 }
 initMainImage();
 
-document.body.appendChild(layer);
-layer.appendChild(restTimeEl);
-layer.appendChild(mainImageEl);
+function initBtn() {
+  preBtn.innerText = `pre`;
+  nextBtn.innerText = `next`;
+  layer.appendChild(preBtn);
+  layer.appendChild(nextBtn);
+}
+initBtn();
 
-[...imageAEls].map(imageAEl=>{
-  imageAEl.addEventListener(`click`, ()=>{
-    const previewEl = document.querySelector(`#Sva75c > div > div > div.pxAole > div.tvh9oe.BIB1wf > \
-    c-wiz > div.OUZ5W > div.zjoqD > div > div.v4dQwb > a > img`);
-    if (!previewEl) {
-        return;
-    }
-
-    mainImageEl.src = previewEl.src;
-  });
-});
-
-function updateRestTime() {
+function updateRestTime(interval) {
   while(restTimeIds.length) {
     clearInterval(restTimeIds.pop());
   }
@@ -58,7 +57,7 @@ function updateRestTime() {
     restTime++;
     restTimeEl.innerHTML = restTime + `s`;
     
-    if (restTime * 1000 >= interval) {
+    if (restTime * 1000 > interval) {
       restTime = 0;
     }
   }, 1000);
@@ -66,28 +65,36 @@ function updateRestTime() {
 }
 
 function clickNextTimeout(index, interval) {
-  console.log(interval);
+  updateRestTime(interval);
   if (index >= imageAEls.length || imageAEls[index].tagName !== `A`) {
     return;
   }
+  const cacheImageEl = imageAEls[index].querySelector(`div.bRMDJf.islir > img`);
+
   imageAEls[index].click();
+  if (cacheImageEl) {
+    mainImageEl.src = cacheImageEl.src;
+    preImageUrls.push(cacheImageEl.src);
+  }
+
   timeId = setTimeout(()=>clickNextTimeout(index+1, interval), interval);
   timeIds.push(timeId);
 }
 
 function init(status, interval) {
-  console.log(interval);
+  preImageUrls = [];
+
   if (status) {
+    observer.observe(targetNode, config);
+    layer.style.visibility = `visible`;
     imageAEls[0].click();
     timeId = setTimeout(()=>clickNextTimeout(1, interval), 100);
     timeIds.push(timeId);
-    updateRestTime();
-
-    layer.style.visibility = `visible`;
+    updateRestTime(interval);
     return;
   } else{
+    observer.disconnect();
     layer.style.visibility = `hidden`;
-
     while(timeIds.length) {
       clearTimeout(timeIds.pop());
     }
@@ -113,3 +120,32 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
     }
   }
 });
+
+const targetNode = document.getElementById('Sva75c');
+const imageSet = new Set();
+const config = { attributes: true, subtree: true };
+
+function mutationCallback(mutationsList, observer) {
+  let lastMutaion;
+  console.log("Callback!!" + mutationsList.length);
+  for(let mutation of mutationsList) {
+    if (mutation.type === 'attributes') {
+      if (mutation.target 
+        && mutation.target.tagName === `IMG`
+        && mutation.target.className === `n3VNCb`
+        && mutation.attributeName === `src`) {
+        lastMutaion = mutation;
+      }
+    }
+  }
+  if (lastMutaion && lastMutaion.target) {
+    if (!imageSet.has(lastMutaion.target.currentSrc)) {
+      preImageUrls.pop();
+      preImageUrls.push(lastMutaion.target.currentSrc);
+      mainImageEl.src = lastMutaion.target.currentSrc;
+      imageSet.add(lastMutaion.target.currentSrc);
+    }
+  } 
+};
+
+
