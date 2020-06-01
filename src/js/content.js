@@ -1,14 +1,18 @@
 const observer = new MutationObserver(mutationCallback);
+const targetNode = document.getElementById('Sva75c');
+const config = { attributes: true, subtree: true };
+// element
 const imageAEls = document.querySelectorAll(`#islrg > div.islrc > div > a.wXeWr.islib.nfEiy.mM5pbd`);
 const mainImageEl = document.createElement(`img`);
 const layer = document.createElement(`div`);
 const restTimeEl = document.createElement(`div`);
 const preBtn = document.createElement(`button`);
 const nextBtn = document.createElement(`button`);
-let timeIds = [];
-let restTimeIds = [];
+const timeIds = [];
+const restTimeIds = [];
+let imageSet = new Set();
+let imageUrls = [];
 let interval = 5*1000;
-let preImageUrls = [];
 
 function initLayer() {
   layer.id = `croquisTimerLayer`;
@@ -55,7 +59,7 @@ function updateRestTime(interval) {
   
   restTimeId = setInterval(function() {
     restTime++;
-    restTimeEl.innerHTML = restTime + `s`;
+    restTimeEl.innerHTML = (interval/1000 - restTime) + `s`;
     
     if (restTime * 1000 > interval) {
       restTime = 0;
@@ -74,24 +78,26 @@ function clickNextTimeout(index, interval) {
   imageAEls[index].click();
   if (cacheImageEl) {
     mainImageEl.src = cacheImageEl.src;
-    preImageUrls.push(cacheImageEl.src);
+    imageUrls.push(cacheImageEl.src);
   }
 
   timeId = setTimeout(()=>clickNextTimeout(index+1, interval), interval);
   timeIds.push(timeId);
 }
 
-function init(status, interval) {
-  preImageUrls = [];
-
+function init(status, interval, startIndex = 0) {
+  imageUrls = [];
+  imageSet = new Set();
+  if (imageAEls.length === 0) {
+    return;
+  }
   if (status) {
     observer.observe(targetNode, config);
     layer.style.visibility = `visible`;
-    imageAEls[0].click();
-    timeId = setTimeout(()=>clickNextTimeout(1, interval), 100);
+    imageAEls[startIndex].click();
+    timeId = setTimeout(()=>clickNextTimeout(startIndex + 1, interval), 100);
     timeIds.push(timeId);
     updateRestTime(interval);
-    return;
   } else{
     observer.disconnect();
     layer.style.visibility = `hidden`;
@@ -103,6 +109,29 @@ function init(status, interval) {
     }
   }
 }
+
+function mutationCallback(mutationsList, observer) {
+  let lastMutaion;
+  
+  for(let mutation of mutationsList) {
+    if (mutation.type === 'attributes') {
+      if (mutation.target 
+        && mutation.target.tagName === `IMG`
+        && mutation.target.className === `n3VNCb`
+        && mutation.attributeName === `src`) {
+        lastMutaion = mutation;
+      }
+    }
+  }
+  if (lastMutaion && lastMutaion.target) {
+    if (!imageSet.has(lastMutaion.target.currentSrc)) {
+      imageUrls.pop();
+      imageUrls.push(lastMutaion.target.currentSrc);
+      mainImageEl.src = lastMutaion.target.currentSrc;
+      imageSet.add(lastMutaion.target.currentSrc);
+    }
+  } 
+};
 
 chrome.storage.local.get(['status'], function(result) {
   if (result.length === 0 || result[`status`] === false) {
@@ -120,32 +149,3 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
     }
   }
 });
-
-const targetNode = document.getElementById('Sva75c');
-const imageSet = new Set();
-const config = { attributes: true, subtree: true };
-
-function mutationCallback(mutationsList, observer) {
-  let lastMutaion;
-  console.log("Callback!!" + mutationsList.length);
-  for(let mutation of mutationsList) {
-    if (mutation.type === 'attributes') {
-      if (mutation.target 
-        && mutation.target.tagName === `IMG`
-        && mutation.target.className === `n3VNCb`
-        && mutation.attributeName === `src`) {
-        lastMutaion = mutation;
-      }
-    }
-  }
-  if (lastMutaion && lastMutaion.target) {
-    if (!imageSet.has(lastMutaion.target.currentSrc)) {
-      preImageUrls.pop();
-      preImageUrls.push(lastMutaion.target.currentSrc);
-      mainImageEl.src = lastMutaion.target.currentSrc;
-      imageSet.add(lastMutaion.target.currentSrc);
-    }
-  } 
-};
-
-
