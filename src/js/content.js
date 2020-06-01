@@ -11,6 +11,7 @@ const preBtn = document.createElement(`button`);
 const nextBtn = document.createElement(`button`);
 const timeIds = [];
 const restTimeIds = [];
+let curIndex = 0;
 let imageSet = new Set();
 let imageUrls = [];
 let interval = 5*1000;
@@ -46,7 +47,9 @@ initMainImage();
 
 function initBtn() {
   preBtn.innerText = `pre`;
+  preBtn.addEventListener(`click`, ()=>getPrev(interval));
   nextBtn.innerText = `next`;
+  nextBtn.addEventListener(`click`, ()=>getNext(interval));
   btnWrapper.style.bottom = `100px`;
   btnWrapper.style.position = `fixed`;
   layer.appendChild(btnWrapper);
@@ -73,20 +76,62 @@ function updateRestTime(interval) {
 }
 
 function clickNextTimeout(index, interval) {
+  curIndex = index - 1;
   updateRestTime(interval);
   if (index >= imageAEls.length || imageAEls[index].tagName !== `A`) {
     return;
   }
   const cacheImageEl = imageAEls[index].querySelector(`div.bRMDJf.islir > img`);
 
-  imageAEls[index].click();
-  if (cacheImageEl) {
-    mainImageEl.src = cacheImageEl.src;
-    imageUrls.push(cacheImageEl.src);
+  if (curIndex >= imageUrls.length) {
+    imageAEls[index].click();
+    if (cacheImageEl) {
+      mainImageEl.src = cacheImageEl.src;
+      imageUrls.push(cacheImageEl.src);
+    }
+  } else{
+    mainImageEl.src = imageUrls[curIndex];
   }
-
   timeId = setTimeout(()=>clickNextTimeout(index+1, interval), interval);
   timeIds.push(timeId);
+}
+
+function getPrev(interval) {
+  if (curIndex === 0) {
+    return;
+  }
+  curIndex--;
+  while(timeIds.length) {
+    clearTimeout(timeIds.pop());
+  }
+  while(restTimeIds.length) {
+    clearInterval(restTimeIds.pop());
+  }
+  mainImageEl.src = imageUrls[curIndex];
+  timeId = setTimeout(()=>clickNextTimeout(curIndex + 1, interval), 100);
+  timeIds.push(timeId);
+  updateRestTime(interval);
+}
+
+function getNext(interval) {
+  if (curIndex >= imageAEls.length) {
+    return;
+  }
+  curIndex++;
+  while(timeIds.length) {
+    clearTimeout(timeIds.pop());
+  }
+  while(restTimeIds.length) {
+    clearInterval(restTimeIds.pop());
+  }
+  if (curIndex >= imageUrls.length) {
+    imageAEls[curIndex].click();
+  } else {
+    mainImageEl.src = imageUrls[curIndex];
+  }
+  timeId = setTimeout(()=>clickNextTimeout(curIndex + 1, interval), 100);
+  timeIds.push(timeId);
+  updateRestTime(interval);
 }
 
 function init(status, interval, startIndex = 0) {
