@@ -6,6 +6,7 @@ const imageAEls = document.querySelectorAll(`#islrg > div.islrc > div > a.wXeWr.
 const mainImageEl = document.createElement(`img`);
 const layer = document.createElement(`div`);
 const restTimeEl = document.createElement(`div`);
+const btnWrapper = document.createElement(`div`);
 const preBtn = document.createElement(`button`);
 const nextBtn = document.createElement(`button`);
 const timeIds = [];
@@ -46,8 +47,11 @@ initMainImage();
 function initBtn() {
   preBtn.innerText = `pre`;
   nextBtn.innerText = `next`;
-  layer.appendChild(preBtn);
-  layer.appendChild(nextBtn);
+  btnWrapper.style.bottom = `100px`;
+  btnWrapper.style.position = `fixed`;
+  layer.appendChild(btnWrapper);
+  btnWrapper.appendChild(preBtn);
+  btnWrapper.appendChild(nextBtn);
 }
 initBtn();
 
@@ -112,7 +116,7 @@ function init(status, interval, startIndex = 0) {
 
 function mutationCallback(mutationsList, observer) {
   let lastMutaion;
-  
+
   for(let mutation of mutationsList) {
     if (mutation.type === 'attributes') {
       if (mutation.target 
