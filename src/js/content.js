@@ -48,6 +48,10 @@ function initBtn() {
   preBtn.addEventListener(`click`, ()=>getPrev(interval));
   nextBtn.innerText = `next`;
   nextBtn.addEventListener(`click`, ()=>getNext(interval));
+  closeBtn.innerText = `X`;
+  closeBtn.addEventListener(`click`,()=>{
+    chrome.storage.local.set({status: false});
+  });
   btnWrapper.style.bottom = `100px`;
   btnWrapper.style.position = `fixed`;
   btnWrapper.appendChild(preBtn);
@@ -59,6 +63,7 @@ function appendChilds() {
   layer.appendChild(restTimeEl);
   layer.appendChild(mainImageEl);
   layer.appendChild(btnWrapper);
+  layer.appendChild(closeBtn);
   document.body.appendChild(layer);
 }
 appendChilds();
