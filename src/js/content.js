@@ -8,6 +8,7 @@ const restTimeEl = document.createElement(`div`);
 const btnWrapper = document.createElement(`div`);
 const preBtn = document.createElement(`button`);
 const nextBtn = document.createElement(`button`);
+const stopBtn = document.createElement(`button`);
 const closeBtn = document.createElement(`button`);
 const timeIds = [];
 const restTimeIds = [];
@@ -44,26 +45,28 @@ function initMainImage() {
 initMainImage();
 
 function initBtn() {
-  preBtn.innerText = `pre`;
-  preBtn.addEventListener(`click`, ()=>getPrev(interval));
-  nextBtn.innerText = `next`;
-  nextBtn.addEventListener(`click`, ()=>getNext(interval));
   closeBtn.innerText = `X`;
   closeBtn.addEventListener(`click`,()=>{
     chrome.storage.local.set({status: false});
   });
+  preBtn.innerText = `pre`;
+  preBtn.addEventListener(`click`, ()=>getPrev(interval));
+  nextBtn.innerText = `next`;
+  nextBtn.addEventListener(`click`, ()=>getNext(interval));
+  stopBtn.innerText = `stop`;
   btnWrapper.style.bottom = `100px`;
   btnWrapper.style.position = `fixed`;
   btnWrapper.appendChild(preBtn);
   btnWrapper.appendChild(nextBtn);
+  btnWrapper.appendChild(stopBtn);
 }
 initBtn();
 
 function appendChilds() {
   layer.appendChild(restTimeEl);
+  layer.appendChild(closeBtn);
   layer.appendChild(mainImageEl);
   layer.appendChild(btnWrapper);
-  layer.appendChild(closeBtn);
   document.body.appendChild(layer);
 }
 appendChilds();
