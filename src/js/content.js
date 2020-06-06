@@ -12,6 +12,8 @@ const stopBtn = document.createElement(`button`);
 const closeBtn = document.createElement(`button`);
 const timeIds = [];
 const restTimeIds = [];
+const date = new Date(0);
+
 let curIndex = 0;
 let imageSet = new Set();
 let imageUrls = new Array(1000);
@@ -78,8 +80,15 @@ function appendChilds() {
 }
 appendChilds();
 
+function setRestTime(second) {
+  date.setSeconds(second);
+  const timeString = date.toISOString().substr(14, 5);
+  restTimeEl.innerHTML = timeString;
+}
+
 function updateRestTime(interval) {
-  restTimeEl.innerHTML = interval/1000;
+  setRestTime(interval/1000)
+
   while(restTimeIds.length) {
     clearInterval(restTimeIds.pop());
   }
@@ -87,8 +96,7 @@ function updateRestTime(interval) {
   
   restTimeId = setInterval(function() {
     restTime++;
-    restTimeEl.innerHTML = (interval/1000 - restTime);
-    
+    setRestTime(interval/1000 - restTime);
     if (restTime * 1000 > interval) {
       restTime = 0;
     }
