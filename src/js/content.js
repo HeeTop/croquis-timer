@@ -1,5 +1,5 @@
 const observer = new MutationObserver(mutationCallback);
-const targetNode = document.getElementById('Sva75c');
+const targetNode = document.getElementById(`Sva75c`);
 const config = { attributes: true, subtree: true };
 // element
 const imageAEls = document.querySelectorAll(`#islrg > div.islrc > div > a.wXeWr.islib.nfEiy.mM5pbd`);
@@ -13,7 +13,7 @@ const timeIds = [];
 const restTimeIds = [];
 let curIndex = 0;
 let imageSet = new Set();
-let imageUrls = [];
+let imageUrls = new Array(1000);
 let interval = 5*1000;
 
 function initLayer() {
@@ -75,24 +75,24 @@ function updateRestTime(interval) {
   restTimeIds.push(restTimeId);
 }
 
-function clickNextTimeout(index, interval) {
-  curIndex = index - 1;
+function startTimer(index, interval) {
+  curIndex = index;
   updateRestTime(interval);
-  if (index >= imageAEls.length || imageAEls[index].tagName !== `A`) {
+  if (index > imageAEls.length || imageAEls[index].tagName !== `A`) {
     return;
   }
   const cacheImageEl = imageAEls[index].querySelector(`div.bRMDJf.islir > img`);
 
-  if (curIndex >= imageUrls.length) {
+  if (imageUrls[curIndex]) {
+    mainImageEl.src = imageUrls[curIndex];
+  } else {
     imageAEls[index].click();
     if (cacheImageEl) {
-      mainImageEl.src = cacheImageEl.src;
-      imageUrls.push(cacheImageEl.src);
+      imageUrls[curIndex] = cacheImageEl.src;
+      mainImageEl.src = imageUrls[curIndex];
     }
-  } else{
-    mainImageEl.src = imageUrls[curIndex];
   }
-  timeId = setTimeout(()=>clickNextTimeout(index+1, interval), interval);
+  timeId = setTimeout(()=>startTimer(index+1, interval), interval);
   timeIds.push(timeId);
 }
 
@@ -107,10 +107,7 @@ function getPrev(interval) {
   while(restTimeIds.length) {
     clearInterval(restTimeIds.pop());
   }
-  mainImageEl.src = imageUrls[curIndex];
-  timeId = setTimeout(()=>clickNextTimeout(curIndex + 1, interval), 100);
-  timeIds.push(timeId);
-  updateRestTime(interval);
+  startTimer(curIndex, interval);
 }
 
 function getNext(interval) {
@@ -124,18 +121,11 @@ function getNext(interval) {
   while(restTimeIds.length) {
     clearInterval(restTimeIds.pop());
   }
-  if (curIndex >= imageUrls.length) {
-    imageAEls[curIndex].click();
-  } else {
-    mainImageEl.src = imageUrls[curIndex];
-  }
-  timeId = setTimeout(()=>clickNextTimeout(curIndex + 1, interval), 100);
-  timeIds.push(timeId);
-  updateRestTime(interval);
+  startTimer(curIndex, interval);
 }
 
 function init(status, interval, startIndex = 0) {
-  imageUrls = [];
+  imageUrls = new Array(1000);
   imageSet = new Set();
   if (imageAEls.length === 0) {
     return;
@@ -144,9 +134,7 @@ function init(status, interval, startIndex = 0) {
     observer.observe(targetNode, config);
     layer.style.visibility = `visible`;
     imageAEls[startIndex].click();
-    timeId = setTimeout(()=>clickNextTimeout(startIndex + 1, interval), 100);
-    timeIds.push(timeId);
-    updateRestTime(interval);
+    startTimer(startIndex, interval);
   } else{
     observer.disconnect();
     layer.style.visibility = `hidden`;
@@ -163,7 +151,7 @@ function mutationCallback(mutationsList, observer) {
   let lastMutaion;
 
   for(let mutation of mutationsList) {
-    if (mutation.type === 'attributes') {
+    if (mutation.type === `attributes`) {
       if (mutation.target 
         && mutation.target.tagName === `IMG`
         && mutation.target.className === `n3VNCb`
@@ -174,15 +162,14 @@ function mutationCallback(mutationsList, observer) {
   }
   if (lastMutaion && lastMutaion.target) {
     if (!imageSet.has(lastMutaion.target.currentSrc)) {
-      imageUrls.pop();
-      imageUrls.push(lastMutaion.target.currentSrc);
-      mainImageEl.src = lastMutaion.target.currentSrc;
-      imageSet.add(lastMutaion.target.currentSrc);
+      imageUrls[curIndex] = lastMutaion.target.currentSrc;
+      mainImageEl.src = imageUrls[curIndex];
+      imageSet.add(imageUrls[curIndex]);
     }
   } 
 };
 
-chrome.storage.local.get(['status'], function(result) {
+chrome.storage.local.get([`status`], function(result) {
   if (result.length === 0 || result[`status`] === false) {
     init(false, interval);
   } else {
