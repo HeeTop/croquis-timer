@@ -46,6 +46,9 @@ initMainImage();
 
 function initBtn() {
   closeBtn.innerText = `X`;
+  closeBtn.style.position = `absolute`;
+  closeBtn.style.right = `0px`;
+  closeBtn.style.top = `0px`;
   closeBtn.addEventListener(`click`,()=>{
     chrome.storage.local.set({status: false});
   });
