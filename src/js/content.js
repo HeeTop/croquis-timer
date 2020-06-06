@@ -133,7 +133,6 @@ function init(status, interval, startIndex = 0) {
   if (status) {
     observer.observe(targetNode, config);
     layer.style.visibility = `visible`;
-    imageAEls[startIndex].click();
     startTimer(startIndex, interval);
   } else{
     observer.disconnect();
@@ -141,6 +140,12 @@ function init(status, interval, startIndex = 0) {
     clearTimes();
   }
 }
+
+[...imageAEls].map((imageAEl, index)=> {
+  imageAEl.addEventListener(`click`, ()=> {
+    curIndex = index;
+  });
+});
 
 function mutationCallback(mutationsList, observer) {
   let lastMutaion;
@@ -166,9 +171,9 @@ function mutationCallback(mutationsList, observer) {
 
 chrome.storage.local.get([`status`], function(result) {
   if (result.length === 0 || result[`status`] === false) {
-    init(false, interval);
+    init(false, interval, curIndex);
   } else {
-    init(true, interval);
+    init(true, interval, curIndex);
   }
 });
 
@@ -176,7 +181,7 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
   for (const key in changes) {
     if (key === `status`) {
       const storageChange = changes[key];
-      init(storageChange.newValue, interval);
+      init(storageChange.newValue, interval, curIndex);
     }
   }
 });
