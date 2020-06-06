@@ -2,7 +2,6 @@ const observer = new MutationObserver(mutationCallback);
 const targetNode = document.getElementById(`Sva75c`);
 const config = { attributes: true, subtree: true };
 // element
-const imageAEls = document.querySelectorAll(`#islrg > div.islrc > div > a.wXeWr.islib.nfEiy.mM5pbd`);
 const mainImageEl = document.createElement(`img`);
 const layer = document.createElement(`div`);
 const restTimeEl = document.createElement(`div`);
@@ -14,6 +13,7 @@ const restTimeIds = [];
 let curIndex = 0;
 let imageSet = new Set();
 let imageUrls = new Array(1000);
+let imageAEls = document.querySelectorAll(`#islrg > div.islrc > div > a.wXeWr.islib.nfEiy.mM5pbd`);
 let interval = 5*1000;
 
 function initLayer() {
@@ -84,15 +84,28 @@ function clearTimes() {
   }
 }
 
+function updateImageAEl() {
+  const oldLength = imageAEls.length;
+
+  imageAEls = document.querySelectorAll(`#islrg > div.islrc > div > a.wXeWr.islib.nfEiy.mM5pbd`);
+  [...imageAEls].slice(oldLength).map((imageAEl, index)=> {
+    imageAEl.addEventListener(`click`, ()=> {
+      curIndex = index + oldLength;
+    });
+  });
+}
+
 function startTimer(index, interval) {
   curIndex = index;
   updateRestTime(interval);
+  if (index > imageAEls.length - 5) {
+    updateImageAEl();
+  }
   if (index >= imageAEls.length || imageAEls[index] === undefined || imageAEls[index].tagName !== `A`) {
     clearTimes();
     return;
   }
   const cacheImageEl = imageAEls[index].querySelector(`div.bRMDJf.islir > img`);
-
   if (imageUrls[curIndex]) {
     mainImageEl.src = imageUrls[curIndex];
   } else {
@@ -124,7 +137,7 @@ function getNext(interval) {
   startTimer(curIndex, interval);
 }
 
-function init(status, interval, startIndex = 0) {
+function init(status, interval, startIndex) {
   imageUrls = new Array(1000);
   imageSet = new Set();
   if (imageAEls.length === 0) {
