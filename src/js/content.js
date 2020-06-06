@@ -4,7 +4,7 @@ const config = { attributes: true, subtree: true };
 // element
 const mainImageEl = document.createElement(`img`);
 const layer = document.createElement(`div`);
-const restTimeEl = document.createElement(`div`);
+const restTimeEl = document.createElement(`span`);
 const btnWrapper = document.createElement(`div`);
 const preBtn = document.createElement(`button`);
 const nextBtn = document.createElement(`button`);
@@ -33,7 +33,9 @@ function initLayer() {
 initLayer();
 
 function initRestTime() {
-  restTimeEl.style.color = `white`;
+  restTimeEl.style.color = `gainsboro`;
+  restTimeEl.style.fontFamily = `Raleway,sans-serif`;
+  restTimeEl.style.fontSize = `1rem`;
 }
 initRestTime();
 
@@ -77,7 +79,7 @@ function appendChilds() {
 appendChilds();
 
 function updateRestTime(interval) {
-  restTimeEl.innerHTML = interval/1000 + `s`;
+  restTimeEl.innerHTML = interval/1000;
   while(restTimeIds.length) {
     clearInterval(restTimeIds.pop());
   }
@@ -85,7 +87,7 @@ function updateRestTime(interval) {
   
   restTimeId = setInterval(function() {
     restTime++;
-    restTimeEl.innerHTML = (interval/1000 - restTime) + `s`;
+    restTimeEl.innerHTML = (interval/1000 - restTime);
     
     if (restTime * 1000 > interval) {
       restTime = 0;
@@ -160,7 +162,7 @@ function getNext(interval) {
 function stopTimer() {
   if (stopBtn.value === `true`) {
     // continue
-    const restSecond = restTimeEl.innerText.slice(0, -1);
+    const restSecond = restTimeEl.innerText;
     updateRestTime(restSecond * 1000);
     setTimeout(()=>startTimer(curIndex + 1, interval), restSecond * 1000);
     stopBtn.value = `false`;
