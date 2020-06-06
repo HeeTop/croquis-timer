@@ -75,10 +75,20 @@ function updateRestTime(interval) {
   restTimeIds.push(restTimeId);
 }
 
+function clearTimes() {
+  while(timeIds.length) {
+    clearTimeout(timeIds.pop());
+  }
+  while(restTimeIds.length) {
+    clearInterval(restTimeIds.pop());
+  }
+}
+
 function startTimer(index, interval) {
   curIndex = index;
   updateRestTime(interval);
-  if (index > imageAEls.length || imageAEls[index].tagName !== `A`) {
+  if (index >= imageAEls.length || imageAEls[index] === undefined || imageAEls[index].tagName !== `A`) {
+    clearTimes();
     return;
   }
   const cacheImageEl = imageAEls[index].querySelector(`div.bRMDJf.islir > img`);
@@ -101,12 +111,7 @@ function getPrev(interval) {
     return;
   }
   curIndex--;
-  while(timeIds.length) {
-    clearTimeout(timeIds.pop());
-  }
-  while(restTimeIds.length) {
-    clearInterval(restTimeIds.pop());
-  }
+  clearTimes();
   startTimer(curIndex, interval);
 }
 
@@ -115,12 +120,7 @@ function getNext(interval) {
     return;
   }
   curIndex++;
-  while(timeIds.length) {
-    clearTimeout(timeIds.pop());
-  }
-  while(restTimeIds.length) {
-    clearInterval(restTimeIds.pop());
-  }
+  clearTimes();
   startTimer(curIndex, interval);
 }
 
@@ -138,12 +138,7 @@ function init(status, interval, startIndex = 0) {
   } else{
     observer.disconnect();
     layer.style.visibility = `hidden`;
-    while(timeIds.length) {
-      clearTimeout(timeIds.pop());
-    }
-    while(restTimeIds.length) {
-      clearInterval(restTimeIds.pop());
-    }
+    clearTimes();
   }
 }
 
