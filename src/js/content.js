@@ -8,6 +8,7 @@ const restTimeEl = document.createElement(`div`);
 const btnWrapper = document.createElement(`div`);
 const preBtn = document.createElement(`button`);
 const nextBtn = document.createElement(`button`);
+const closeBtn = document.createElement(`button`);
 const timeIds = [];
 const restTimeIds = [];
 let curIndex = 0;
@@ -27,13 +28,11 @@ function initLayer() {
   layer.style.backgroundColor = `black`;
   layer.style.visibility = `hidden`;
   layer.style.position = `fixed`;
-  document.body.appendChild(layer);
 }
 initLayer();
 
 function initRestTime() {
   restTimeEl.style.color = `white`;
-  layer.appendChild(restTimeEl);
 }
 initRestTime();
 
@@ -41,7 +40,6 @@ function initMainImage() {
   mainImageEl.style.display = `block`;
   mainImageEl.style.margin = `auto`;
   mainImageEl.style.width = `50%`;
-  layer.appendChild(mainImageEl);
 }
 initMainImage();
 
@@ -52,11 +50,18 @@ function initBtn() {
   nextBtn.addEventListener(`click`, ()=>getNext(interval));
   btnWrapper.style.bottom = `100px`;
   btnWrapper.style.position = `fixed`;
-  layer.appendChild(btnWrapper);
   btnWrapper.appendChild(preBtn);
   btnWrapper.appendChild(nextBtn);
 }
 initBtn();
+
+function appendChilds() {
+  layer.appendChild(restTimeEl);
+  layer.appendChild(mainImageEl);
+  layer.appendChild(btnWrapper);
+  document.body.appendChild(layer);
+}
+appendChilds();
 
 function updateRestTime(interval) {
   while(restTimeIds.length) {
