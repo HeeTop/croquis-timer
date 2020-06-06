@@ -54,6 +54,8 @@ function initBtn() {
   nextBtn.innerText = `next`;
   nextBtn.addEventListener(`click`, ()=>getNext(interval));
   stopBtn.innerText = `stop`;
+  stopBtn.value = `false`;
+  stopBtn.addEventListener(`click`, ()=>stopTimer());
   btnWrapper.style.bottom = `100px`;
   btnWrapper.style.position = `fixed`;
   btnWrapper.appendChild(preBtn);
@@ -72,6 +74,7 @@ function appendChilds() {
 appendChilds();
 
 function updateRestTime(interval) {
+  restTimeEl.innerHTML = interval/1000 + `s`;
   while(restTimeIds.length) {
     clearInterval(restTimeIds.pop());
   }
@@ -110,6 +113,7 @@ function updateImageAEl() {
 
 function startTimer(index, interval) {
   curIndex = index;
+  stopBtn.value = `false`;
   updateRestTime(interval);
   if (index > imageAEls.length - 5) {
     updateImageAEl();
@@ -150,9 +154,24 @@ function getNext(interval) {
   startTimer(curIndex, interval);
 }
 
+function stopTimer() {
+  if (stopBtn.value === `true`) {
+    // continue
+    const restSecond = restTimeEl.innerText.slice(0, -1);
+    updateRestTime(restSecond * 1000);
+    setTimeout(()=>startTimer(curIndex + 1, interval), restSecond * 1000);
+    stopBtn.value = `false`;
+  } else {
+    // stop
+    clearTimes();
+    stopBtn.value = `true`;
+  }
+}
+
 function init(status, interval, startIndex) {
   imageUrls = new Array(1000);
   imageSet = new Set();
+
   if (imageAEls.length === 0) {
     return;
   }
