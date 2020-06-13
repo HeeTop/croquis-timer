@@ -2,7 +2,7 @@ const observer = new MutationObserver(mutationCallback);
 const targetNode = document.getElementById(`Sva75c`);
 const config = { attributes: true, subtree: true };
 // element
-const mainImageEl = document.createElement(`img`);
+const mainImageEl = document.createElement(`div`);
 const layer = document.createElement(`div`);
 const restTimeEl = document.createElement(`span`);
 const btnWrapper = document.createElement(`div`);
@@ -17,8 +17,10 @@ const date = new Date(0);
 let curIndex = 0;
 let imageSet = new Set();
 let imageUrls = new Array(1000);
-let imageAEls = document.querySelectorAll(`#islrg > div.islrc > div > a.wXeWr.islib.nfEiy.mM5pbd`);
-let interval = 5*1000;
+let imageAEls = document.querySelectorAll(
+  `#islrg > div.islrc > div > a.wXeWr.islib.nfEiy.mM5pbd`
+);
+let interval = 5 * 1000;
 
 function initLayer() {
   layer.id = `croquisTimerLayer`;
@@ -43,8 +45,13 @@ initRestTime();
 
 function initMainImage() {
   mainImageEl.style.display = `block`;
-  mainImageEl.style.margin = `auto`;
   mainImageEl.style.width = `50%`;
+  // 마크업 완료 후 50px 그에 맞게 수정 필요
+  mainImageEl.style.height = `calc(100% - 50px)`;
+  mainImageEl.style.margin = `0 auto`;
+  mainImageEl.style.backgroundSize = `contain`;
+  mainImageEl.style.backgroundRepeat = `no-repeat`;
+  mainImageEl.style.backgroundPosition = `center`;
 }
 initMainImage();
 
@@ -53,16 +60,16 @@ function initBtn() {
   closeBtn.style.position = `absolute`;
   closeBtn.style.right = `0px`;
   closeBtn.style.top = `0px`;
-  closeBtn.addEventListener(`click`,()=>{
-    chrome.storage.local.set({status: false});
+  closeBtn.addEventListener(`click`, () => {
+    chrome.storage.local.set({ status: false });
   });
   preBtn.innerText = `pre`;
-  preBtn.addEventListener(`click`, ()=>getPrev(interval));
+  preBtn.addEventListener(`click`, () => getPrev(interval));
   nextBtn.innerText = `next`;
-  nextBtn.addEventListener(`click`, ()=>getNext(interval));
+  nextBtn.addEventListener(`click`, () => getNext(interval));
   stopBtn.innerText = `stop`;
   stopBtn.value = `false`;
-  stopBtn.addEventListener(`click`, ()=>stopTimer());
+  stopBtn.addEventListener(`click`, () => stopTimer());
   btnWrapper.style.bottom = `100px`;
   btnWrapper.style.position = `fixed`;
   btnWrapper.appendChild(preBtn);
@@ -87,16 +94,16 @@ function setRestTime(second) {
 }
 
 function updateRestTime(interval) {
-  setRestTime(interval/1000)
+  setRestTime(interval / 1000);
 
-  while(restTimeIds.length) {
+  while (restTimeIds.length) {
     clearInterval(restTimeIds.pop());
   }
   let restTime = 0;
-  
-  restTimeId = setInterval(function() {
+
+  restTimeId = setInterval(function () {
     restTime++;
-    setRestTime(interval/1000 - restTime);
+    setRestTime(interval / 1000 - restTime);
     if (restTime * 1000 > interval) {
       restTime = 0;
     }
@@ -105,10 +112,10 @@ function updateRestTime(interval) {
 }
 
 function clearTimes() {
-  while(timeIds.length) {
+  while (timeIds.length) {
     clearTimeout(timeIds.pop());
   }
-  while(restTimeIds.length) {
+  while (restTimeIds.length) {
     clearInterval(restTimeIds.pop());
   }
 }
@@ -116,9 +123,11 @@ function clearTimes() {
 function updateImageAEl() {
   const oldLength = imageAEls.length;
 
-  imageAEls = document.querySelectorAll(`#islrg > div.islrc > div > a.wXeWr.islib.nfEiy.mM5pbd`);
-  [...imageAEls].slice(oldLength).map((imageAEl, index)=> {
-    imageAEl.addEventListener(`click`, ()=> {
+  imageAEls = document.querySelectorAll(
+    `#islrg > div.islrc > div > a.wXeWr.islib.nfEiy.mM5pbd`
+  );
+  [...imageAEls].slice(oldLength).map((imageAEl, index) => {
+    imageAEl.addEventListener(`click`, () => {
       curIndex = index + oldLength;
     });
   });
@@ -131,21 +140,25 @@ function startTimer(index, interval) {
   if (index > imageAEls.length - 5) {
     updateImageAEl();
   }
-  if (index >= imageAEls.length || imageAEls[index] === undefined || imageAEls[index].tagName !== `A`) {
+  if (
+    index >= imageAEls.length ||
+    imageAEls[index] === undefined ||
+    imageAEls[index].tagName !== `A`
+  ) {
     clearTimes();
     return;
   }
   const cacheImageEl = imageAEls[index].querySelector(`div.bRMDJf.islir > img`);
   if (imageUrls[curIndex]) {
-    mainImageEl.src = imageUrls[curIndex];
+    mainImageEl.style.backgroundImage = `url(${imageUrls[curIndex]})`;
   } else {
     imageAEls[index].click();
     if (cacheImageEl) {
       imageUrls[curIndex] = cacheImageEl.src;
-      mainImageEl.src = imageUrls[curIndex];
+      mainImageEl.style.backgroundImage = `url(${imageUrls[curIndex]})`;
     }
   }
-  timeId = setTimeout(()=>startTimer(index+1, interval), interval);
+  timeId = setTimeout(() => startTimer(index + 1, interval), interval);
   timeIds.push(timeId);
 }
 
@@ -172,7 +185,7 @@ function stopTimer() {
     // continue
     const restSecond = restTimeEl.innerText;
     updateRestTime(restSecond * 1000);
-    setTimeout(()=>startTimer(curIndex + 1, interval), restSecond * 1000);
+    setTimeout(() => startTimer(curIndex + 1, interval), restSecond * 1000);
     stopBtn.value = `false`;
   } else {
     // stop
@@ -192,15 +205,15 @@ function init(status, interval, startIndex) {
     observer.observe(targetNode, config);
     layer.style.visibility = `visible`;
     startTimer(startIndex, interval);
-  } else{
+  } else {
     observer.disconnect();
     layer.style.visibility = `hidden`;
     clearTimes();
   }
 }
 
-[...imageAEls].map((imageAEl, index)=> {
-  imageAEl.addEventListener(`click`, ()=> {
+[...imageAEls].map((imageAEl, index) => {
+  imageAEl.addEventListener(`click`, () => {
     curIndex = index;
   });
 });
@@ -208,12 +221,14 @@ function init(status, interval, startIndex) {
 function mutationCallback(mutationsList, observer) {
   let lastMutaion;
 
-  for(let mutation of mutationsList) {
+  for (let mutation of mutationsList) {
     if (mutation.type === `attributes`) {
-      if (mutation.target 
-        && mutation.target.tagName === `IMG`
-        && mutation.target.className === `n3VNCb`
-        && mutation.attributeName === `src`) {
+      if (
+        mutation.target &&
+        mutation.target.tagName === `IMG` &&
+        mutation.target.className === `n3VNCb` &&
+        mutation.attributeName === `src`
+      ) {
         lastMutaion = mutation;
       }
     }
@@ -221,13 +236,13 @@ function mutationCallback(mutationsList, observer) {
   if (lastMutaion && lastMutaion.target) {
     if (!imageSet.has(lastMutaion.target.currentSrc)) {
       imageUrls[curIndex] = lastMutaion.target.currentSrc;
-      mainImageEl.src = imageUrls[curIndex];
+      mainImageEl.style.backgroundImage = `url(${imageUrls[curIndex]})`;
       imageSet.add(imageUrls[curIndex]);
     }
-  } 
-};
+  }
+}
 
-chrome.storage.local.get([`status`], function(result) {
+chrome.storage.local.get([`status`], function (result) {
   if (result.length === 0 || result[`status`] === false) {
     init(false, interval, curIndex);
   } else {
@@ -235,7 +250,7 @@ chrome.storage.local.get([`status`], function(result) {
   }
 });
 
-chrome.storage.onChanged.addListener(function(changes, namespace) {
+chrome.storage.onChanged.addListener(function (changes, namespace) {
   for (const key in changes) {
     if (key === `status`) {
       const storageChange = changes[key];
