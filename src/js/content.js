@@ -20,7 +20,9 @@ let imageUrls = new Array(1000);
 let imageAEls = document.querySelectorAll(
   `#islrg > div.islrc > div > a.wXeWr.islib.nfEiy.mM5pbd`
 );
-let interval = 5 * 1000;
+const SECOND = 5;
+const SEC = 1000;
+let RestSecond = SECOND;
 
 function initLayer() {
   layer.id = `croquisTimerLayer`;
@@ -88,27 +90,10 @@ function appendChilds() {
 appendChilds();
 
 function setRestTime(second) {
+  console.log(second);
   date.setSeconds(second);
   const timeString = date.toISOString().substr(14, 5);
   restTimeEl.innerHTML = timeString;
-}
-
-function updateRestTime(interval) {
-  setRestTime(interval / 1000);
-
-  while (restTimeIds.length) {
-    clearInterval(restTimeIds.pop());
-  }
-  let restTime = 0;
-
-  restTimeId = setInterval(function () {
-    restTime++;
-    setRestTime(interval / 1000 - restTime);
-    if (restTime * 1000 > interval) {
-      restTime = 0;
-    }
-  }, 1000);
-  restTimeIds.push(restTimeId);
 }
 
 function clearTimes() {
@@ -121,6 +106,9 @@ function clearTimes() {
 }
 
 function updateImageAEl() {
+  if (curIndex < imageAEls.length - 5) {
+    return;
+  }
   const oldLength = imageAEls.length;
 
   imageAEls = document.querySelectorAll(
@@ -133,22 +121,31 @@ function updateImageAEl() {
   });
 }
 
-function startTimer(index, interval) {
+function intervalTimer() {
+  if (RestSecond < 0) {
+    while (restTimeIds.length) {
+      clearInterval(restTimeIds.pop());
+    }
+    startTimer(curIndex + 1, SECOND);
+  }
+  setRestTime(RestSecond);
+  RestSecond--;
+}
+
+function startTimer(index, second) {
   curIndex = index;
   stopBtn.value = `false`;
-  updateRestTime(interval);
-  if (index > imageAEls.length - 5) {
-    updateImageAEl();
-  }
+  updateImageAEl();
   if (
     index >= imageAEls.length ||
     imageAEls[index] === undefined ||
     imageAEls[index].tagName !== `A`
   ) {
-    clearTimes();
+    clearTimeout();
     return;
   }
   const cacheImageEl = imageAEls[index].querySelector(`div.bRMDJf.islir > img`);
+
   if (imageUrls[curIndex]) {
     mainImageEl.style.backgroundImage = `url(${imageUrls[curIndex]})`;
   } else {
@@ -158,8 +155,10 @@ function startTimer(index, interval) {
       mainImageEl.style.backgroundImage = `url(${imageUrls[curIndex]})`;
     }
   }
-  timeId = setTimeout(() => startTimer(index + 1, interval), interval);
-  timeIds.push(timeId);
+  RestSecond = second;
+  restTimeId = setInterval(()=>intervalTimer(), SEC);
+  restTimeIds.push(restTimeId);
+  return;
 }
 
 function getPrev(interval) {
@@ -183,9 +182,7 @@ function getNext(interval) {
 function stopTimer() {
   if (stopBtn.value === `true`) {
     // continue
-    const restSecond = restTimeEl.innerText;
-    updateRestTime(restSecond * 1000);
-    setTimeout(() => startTimer(curIndex + 1, interval), restSecond * 1000);
+    startTimer(curIndex, RestSecond);
     stopBtn.value = `false`;
   } else {
     // stop
@@ -204,7 +201,7 @@ function init(status, interval, startIndex) {
   if (status) {
     observer.observe(targetNode, config);
     layer.style.visibility = `visible`;
-    startTimer(startIndex, interval);
+    startTimer(startIndex, SECOND);
   } else {
     observer.disconnect();
     layer.style.visibility = `hidden`;
@@ -244,9 +241,9 @@ function mutationCallback(mutationsList, observer) {
 
 chrome.storage.local.get([`status`], function (result) {
   if (result.length === 0 || result[`status`] === false) {
-    init(false, interval, curIndex);
+    init(false, SECOND, curIndex);
   } else {
-    init(true, interval, curIndex);
+    init(true, SECOND, curIndex);
   }
 });
 
@@ -254,7 +251,7 @@ chrome.storage.onChanged.addListener(function (changes, namespace) {
   for (const key in changes) {
     if (key === `status`) {
       const storageChange = changes[key];
-      init(storageChange.newValue, interval, curIndex);
+      init(storageChange.newValue, SECOND, curIndex);
     }
   }
 });
