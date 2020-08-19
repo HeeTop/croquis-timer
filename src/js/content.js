@@ -10,6 +10,10 @@ const preBtn = document.createElement(`button`);
 const nextBtn = document.createElement(`button`);
 const stopBtn = document.createElement(`button`);
 const closeBtn = document.createElement(`button`);
+const timeSelectEl = document.createElement(`select`);
+
+
+
 const restTimeIds = [];
 const date = new Date(0);
 const SEC = 1000;
@@ -79,11 +83,24 @@ function initBtn() {
 }
 initBtn();
 
+function initSelectBox() {
+  timeSelectEl.innerHTML = `<option>15 sec</option>
+                            <option>30 sec</option>
+                            <option>1 min</option>
+                            <option>2 min</option>
+                            <option>5 min.</option>
+                            <option>10 min</option>
+                            <option>15 min</option>
+                            <option>30 min</option>`;
+}
+initSelectBox();
+
 function appendChilds() {
   layer.appendChild(restTimeEl);
   layer.appendChild(closeBtn);
   layer.appendChild(mainImageEl);
   layer.appendChild(btnWrapper);
+  layer.appendChild(timeSelectEl);
   document.body.appendChild(layer);
 }
 appendChilds();
