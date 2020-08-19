@@ -10,9 +10,9 @@ const preBtn = document.createElement(`button`);
 const nextBtn = document.createElement(`button`);
 const stopBtn = document.createElement(`button`);
 const closeBtn = document.createElement(`button`);
-const timeIds = [];
 const restTimeIds = [];
 const date = new Date(0);
+const SEC = 1000;
 
 let curIndex = 0;
 let imageSet = new Set();
@@ -20,9 +20,8 @@ let imageUrls = new Array(1000);
 let imageAEls = document.querySelectorAll(
   `#islrg > div.islrc > div > a.wXeWr.islib.nfEiy.mM5pbd`
 );
-const SECOND = 5;
-const SEC = 1000;
-let RestSecond = SECOND;
+let SECOND = 5;
+let RestTime = SECOND;
 
 function initLayer() {
   layer.id = `croquisTimerLayer`;
@@ -66,9 +65,9 @@ function initBtn() {
     chrome.storage.local.set({ status: false });
   });
   preBtn.innerText = `pre`;
-  preBtn.addEventListener(`click`, () => getPrev(interval));
+  preBtn.addEventListener(`click`, () => getPrev());
   nextBtn.innerText = `next`;
-  nextBtn.addEventListener(`click`, () => getNext(interval));
+  nextBtn.addEventListener(`click`, () => getNext());
   stopBtn.innerText = `stop`;
   stopBtn.value = `false`;
   stopBtn.addEventListener(`click`, () => stopTimer());
@@ -97,9 +96,6 @@ function setRestTime(second) {
 }
 
 function clearTimes() {
-  while (timeIds.length) {
-    clearTimeout(timeIds.pop());
-  }
   while (restTimeIds.length) {
     clearInterval(restTimeIds.pop());
   }
@@ -123,13 +119,20 @@ function updateImageAEl() {
 
 function intervalTimer() {
   if (RestSecond < 0) {
-    while (restTimeIds.length) {
-      clearInterval(restTimeIds.pop());
-    }
+    // next image
+    clearTimes();
     startTimer(curIndex + 1, SECOND);
+    return;
   }
   setRestTime(RestSecond);
   RestSecond--;
+}
+
+function startInterval(second) {
+  clearTimes();
+  RestSecond = second;
+  restTimeId = setInterval(()=>intervalTimer(), SEC);
+  restTimeIds.push(restTimeId);
 }
 
 function startTimer(index, second) {
@@ -155,28 +158,26 @@ function startTimer(index, second) {
       mainImageEl.style.backgroundImage = `url(${imageUrls[curIndex]})`;
     }
   }
-  RestSecond = second;
-  restTimeId = setInterval(()=>intervalTimer(), SEC);
-  restTimeIds.push(restTimeId);
+  startInterval(second);
   return;
 }
 
-function getPrev(interval) {
+function getPrev() {
   if (curIndex === 0) {
     return;
   }
   curIndex--;
   clearTimes();
-  startTimer(curIndex, interval);
+  startTimer(curIndex, SECOND);
 }
 
-function getNext(interval) {
+function getNext() {
   if (curIndex >= imageAEls.length) {
     return;
   }
   curIndex++;
   clearTimes();
-  startTimer(curIndex, interval);
+  startTimer(curIndex, SECOND);
 }
 
 function stopTimer() {
