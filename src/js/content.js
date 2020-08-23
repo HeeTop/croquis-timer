@@ -144,14 +144,14 @@ function updateImageAEl() {
 }
 
 function intervalTimer() {
-  if (RestSecond < 0) {
+  if (RestSecond <= 0) {
     // next image
     clearTimes();
     startTimer(curIndex + 1, SECOND);
     return;
   }
-  setRestTime(RestSecond);
   RestSecond--;
+  setRestTime(RestSecond);
 }
 
 function startInterval(second) {
