@@ -84,14 +84,18 @@ function initBtn() {
 initBtn();
 
 function initSelectBox() {
-  timeSelectEl.innerHTML = `<option>15 sec</option>
-                            <option>30 sec</option>
-                            <option>1 min</option>
-                            <option>2 min</option>
-                            <option>5 min.</option>
-                            <option>10 min</option>
-                            <option>15 min</option>
-                            <option>30 min</option>`;
+  timeSelectEl.innerHTML = `<option value=15>15 sec</option>
+                            <option value=30>30 sec</option>
+                            <option value=60>1 min</option>
+                            <option value=120>2 min</option>
+                            <option value=300>5 min</option>
+                            <option value=600>10 min</option>
+                            <option value=900>15 min</option>
+                            <option value=1800>30 min</option>`;
+  timeSelectEl.addEventListener(`change`, ({target: {selectedIndex}})=>{
+    SECOND = parseInt(timeSelectEl.options[selectedIndex].value);
+    startTimer(curIndex, SECOND);
+  });
 }
 initSelectBox();
 
@@ -105,11 +109,16 @@ function appendChilds() {
 }
 appendChilds();
 
+function parseTime(second) {
+  let minute = Math.floor(second / 60);
+  let sec = second % 60;
+  minute = minute.toString().padStart(2, '0');
+  sec = sec.toString().padStart(2, `0`);
+  time = minute + `:` + sec;
+  return time;
+}
 function setRestTime(second) {
-  console.log(second);
-  date.setSeconds(second);
-  const timeString = date.toISOString().substr(14, 5);
-  restTimeEl.innerHTML = timeString;
+  restTimeEl.innerHTML = parseTime(second);
 }
 
 function clearTimes() {
@@ -153,6 +162,7 @@ function startInterval(second) {
 }
 
 function startTimer(index, second) {
+  setRestTime(second);
   curIndex = index;
   stopBtn.value = `false`;
   updateImageAEl();
