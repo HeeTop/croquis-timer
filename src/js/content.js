@@ -12,20 +12,18 @@ const stopBtn = document.createElement(`button`);
 const closeBtn = document.createElement(`button`);
 const timeSelectEl = document.createElement(`select`);
 
-const imageSeletor = `#islrg > div.islrc > div > a.wXeWr.islib.nfEiy`
-
+const imageSeletor = `#islrg > div.islrc > div > a.wXeWr.islib.nfEiy > div.bRMDJf.islir > img`
 const restTimeIds = [];
-const date = new Date(0);
 const SEC = 1000;
 const originImageUrls = {}
 let curIndex = 0;
 let imageSet = new Set();
 let imageUrls = new Array(1000);
-let imageAEls = document.querySelectorAll(
+let cacheImageEls = document.querySelectorAll(
   imageSeletor
 );
-let SECOND = 5;
-let RestTime = SECOND;
+let SETTING_TIME = 5;
+let RestTime = SETTING_TIME;
 
 function initLayer() {
   layer.id = `croquisTimerLayer`;
@@ -92,9 +90,9 @@ function initSelectBox() {
                             <option value=600>10 min</option>
                             <option value=900>15 min</option>
                             <option value=1800>30 min</option>`;
-  timeSelectEl.addEventListener(`change`, ({target: {selectedIndex}})=>{
-    SECOND = parseInt(timeSelectEl.options[selectedIndex].value);
-    startTimer(curIndex, SECOND);
+  timeSelectEl.addEventListener(`change`, ({ target: { selectedIndex } }) => {
+    SETTING_TIME = parseInt(timeSelectEl.options[selectedIndex].value);
+    startTimer(curIndex, SETTING_TIME);
   });
 }
 initSelectBox();
@@ -114,7 +112,7 @@ function parseTime(second) {
   let sec = second % 60;
   minute = minute.toString().padStart(2, '0');
   sec = sec.toString().padStart(2, `0`);
-  time = minute + `:` + sec;
+  time = minute + `:` + sec + `   index : ` + curIndex.toString();
   return time;
 }
 function setRestTime(second) {
@@ -127,27 +125,11 @@ function clearTimes() {
   }
 }
 
-function updateImageAEl() {
-  if (curIndex < imageAEls.length - 5) {
-    return;
-  }
-  const oldLength = imageAEls.length;
-
-  imageAEls = document.querySelectorAll(
-    imageSeletor
-  );
-  [...imageAEls].slice(oldLength).map((imageAEl, index) => {
-    imageAEl.addEventListener(`click`, () => {
-      curIndex = index + oldLength;
-    });
-  });
-}
-
 function intervalTimer() {
   if (RestSecond <= 0) {
     // next image
     clearTimes();
-    startTimer(curIndex + 1, SECOND);
+    startTimer(curIndex + 1, SETTING_TIME);
     return;
   }
   RestSecond--;
@@ -157,7 +139,7 @@ function intervalTimer() {
 function startInterval(second) {
   clearTimes();
   RestSecond = second;
-  restTimeId = setInterval(()=>intervalTimer(), SEC);
+  restTimeId = setInterval(() => intervalTimer(), SEC);
   restTimeIds.push(restTimeId);
 }
 
@@ -165,39 +147,31 @@ function startTimer(index, second) {
   setRestTime(second);
   curIndex = index;
   stopBtn.value = `false`;
-  updateImageAEl();
+  // updateImageAEl();
   if (
-    index >= imageAEls.length ||
-    imageAEls[index] === undefined ||
-    imageAEls[index].tagName !== `A`
+    index >= cacheImageEls.length ||
+    cacheImageEls[index] === undefined
   ) {
     clearTimeout();
     return;
   }
-  const cacheImageEl = imageAEls[index].querySelector(`div.bRMDJf.islir > img`);
+  
+  const cacheImageEl = cacheImageEls[index];
   console.log(index)
-  console.log(originImageUrls);
   if (!(index in originImageUrls)) {
     console.log("no cache!!");
-    if (imageUrls[curIndex]) {
-      mainImageEl.style.backgroundImage = `url(${imageUrls[curIndex]})`;
+    if (imageUrls[index]) {
+      mainImageEl.style.backgroundImage = `url(${imageUrls[index]})`;
     } else {
-      imageAEls[index].click();
+      cacheImageEls[index].click();
       if (cacheImageEl) {
         originImageUrls[index] = cacheImageEl.src;
-        
       }
     }
   } 
-  imageUrls[curIndex] = originImageUrls[index];
-  mainImageEl.style.backgroundImage = `url(${imageUrls[curIndex]})`;
+  imageUrls[index] = originImageUrls[index];
+  mainImageEl.style.backgroundImage = `url(${imageUrls[index]})`;
 
-  if (!(index + 1 in originImageUrls)) {
-    imageAEls[index + 1].click();
-    if (cacheImageEl) {
-      originImageUrls[index + 1] = cacheImageEl.src;
-    }
-  }
   startInterval(second);
   return;
 }
@@ -208,16 +182,16 @@ function getPrev() {
   }
   curIndex--;
   clearTimes();
-  startTimer(curIndex, SECOND);
+  startTimer(curIndex, SETTING_TIME);
 }
 
 function getNext() {
-  if (curIndex >= imageAEls.length) {
+  if (curIndex >= cacheImageEls.length) {
     return;
   }
   curIndex++;
   clearTimes();
-  startTimer(curIndex, SECOND);
+  startTimer(curIndex, SETTING_TIME);
 }
 
 function stopTimer() {
@@ -236,13 +210,13 @@ function init(status, interval, startIndex) {
   imageUrls = new Array(1000);
   imageSet = new Set();
 
-  if (imageAEls.length === 0) {
+  if (cacheImageEls.length === 0) {
     return;
   }
   if (status) {
     observer.observe(targetNode, config);
     layer.style.visibility = `visible`;
-    startTimer(startIndex, SECOND);
+    startTimer(startIndex, SETTING_TIME);
   } else {
     observer.disconnect();
     layer.style.visibility = `hidden`;
@@ -250,11 +224,11 @@ function init(status, interval, startIndex) {
   }
 }
 
-[...imageAEls].map((imageAEl, index) => {
-  imageAEl.addEventListener(`click`, () => {
-    curIndex = index;
-  });
-});
+// [...cacheImageEls].map((imageAEl, index) => {
+//   imageAEl.addEventListener(`click`, () => {
+//     curIndex = index;
+//   });
+// });
 
 function mutationCallback(mutationsList, observer) {
   let lastMutaion;
@@ -275,6 +249,7 @@ function mutationCallback(mutationsList, observer) {
     if (!imageSet.has(lastMutaion.target.currentSrc)) {
       imageUrls[curIndex] = lastMutaion.target.currentSrc;
       mainImageEl.style.backgroundImage = `url(${imageUrls[curIndex]})`;
+      originImageUrls[curIndex] = imageUrls[curIndex];
       imageSet.add(imageUrls[curIndex]);
     }
   }
@@ -282,9 +257,9 @@ function mutationCallback(mutationsList, observer) {
 
 chrome.storage.local.get([`status`], function (result) {
   if (result.length === 0 || result[`status`] === false) {
-    init(false, SECOND, curIndex);
+    init(false, SETTING_TIME, curIndex);
   } else {
-    init(true, SECOND, curIndex);
+    init(true, SETTING_TIME, curIndex);
   }
 });
 
@@ -292,7 +267,7 @@ chrome.storage.onChanged.addListener(function (changes, namespace) {
   for (const key in changes) {
     if (key === `status`) {
       const storageChange = changes[key];
-      init(storageChange.newValue, SECOND, curIndex);
+      init(storageChange.newValue, SETTING_TIME, curIndex);
     }
   }
 });
