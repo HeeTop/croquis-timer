@@ -12,17 +12,17 @@ const stopBtn = document.createElement(`button`);
 const closeBtn = document.createElement(`button`);
 const timeSelectEl = document.createElement(`select`);
 
-
+const imageSeletor = `#islrg > div.islrc > div > a.wXeWr.islib.nfEiy`
 
 const restTimeIds = [];
 const date = new Date(0);
 const SEC = 1000;
-
+const originImageUrls = {}
 let curIndex = 0;
 let imageSet = new Set();
 let imageUrls = new Array(1000);
 let imageAEls = document.querySelectorAll(
-  `#islrg > div.islrc > div > a.wXeWr.islib.nfEiy.mM5pbd`
+  imageSeletor
 );
 let SECOND = 5;
 let RestTime = SECOND;
@@ -134,7 +134,7 @@ function updateImageAEl() {
   const oldLength = imageAEls.length;
 
   imageAEls = document.querySelectorAll(
-    `#islrg > div.islrc > div > a.wXeWr.islib.nfEiy.mM5pbd`
+    imageSeletor
   );
   [...imageAEls].slice(oldLength).map((imageAEl, index) => {
     imageAEl.addEventListener(`click`, () => {
@@ -175,14 +175,27 @@ function startTimer(index, second) {
     return;
   }
   const cacheImageEl = imageAEls[index].querySelector(`div.bRMDJf.islir > img`);
-
-  if (imageUrls[curIndex]) {
-    mainImageEl.style.backgroundImage = `url(${imageUrls[curIndex]})`;
-  } else {
-    imageAEls[index].click();
-    if (cacheImageEl) {
-      imageUrls[curIndex] = cacheImageEl.src;
+  console.log(index)
+  console.log(originImageUrls);
+  if (!(index in originImageUrls)) {
+    console.log("no cache!!");
+    if (imageUrls[curIndex]) {
       mainImageEl.style.backgroundImage = `url(${imageUrls[curIndex]})`;
+    } else {
+      imageAEls[index].click();
+      if (cacheImageEl) {
+        originImageUrls[index] = cacheImageEl.src;
+        
+      }
+    }
+  } 
+  imageUrls[curIndex] = originImageUrls[index];
+  mainImageEl.style.backgroundImage = `url(${imageUrls[curIndex]})`;
+
+  if (!(index + 1 in originImageUrls)) {
+    imageAEls[index + 1].click();
+    if (cacheImageEl) {
+      originImageUrls[index + 1] = cacheImageEl.src;
     }
   }
   startInterval(second);
