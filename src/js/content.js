@@ -1,5 +1,5 @@
-const observer = new MutationObserver(mutationCallback);
-const targetNode = document.getElementById(`Sva75c`);
+const originImageObserver = new MutationObserver(mutationCallback);
+const originImageTargetNode = document.getElementById(`Sva75c`);
 const config = { attributes: true, subtree: true };
 // element
 const mainImageEl = document.createElement(`div`);
@@ -210,7 +210,7 @@ function stopTimer() {
   }
 }
 
-function init(status, interval, startIndex) {
+function init(status, startIndex) {
   if (cacheImageEls.length === 0) {
     return;
   }
@@ -251,13 +251,13 @@ function mutationCallback(mutationsList, observer) {
     originImageUrls[curIndex] = imageUrls[curIndex];
   }
 }
-observer.observe(targetNode, config);
+originImageObserver.observe(originImageTargetNode, config);
   
 chrome.storage.local.get([`status`], function (result) {
   if (result.length === 0 || result[`status`] === false) {
-    init(false, SETTING_TIME, curIndex);
+    init(false, curIndex);
   } else {
-    init(true, SETTING_TIME, curIndex);
+    init(true, curIndex);
   }
 });
 
@@ -265,7 +265,7 @@ chrome.storage.onChanged.addListener(function (changes, namespace) {
   for (const key in changes) {
     if (key === `status`) {
       const storageChange = changes[key];
-      init(storageChange.newValue, SETTING_TIME, curIndex);
+      init(storageChange.newValue, curIndex);
     }
   }
 });
