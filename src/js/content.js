@@ -13,12 +13,12 @@ const closeBtn = document.createElement(`button`);
 const timeSelectEl = document.createElement(`select`);
 
 const imageSeletor = `#islrg > div.islrc > div > a.wXeWr.islib.nfEiy > div.bRMDJf.islir > img`
+const originImageSeletor = `#Sva75c > div > div > div.pxAole > div.tvh9oe.BIB1wf > c-wiz > div > div.OUZ5W > div.zjoqD > div.qdnLaf.isv-id > div > a > img`
 const restTimeIds = [];
 const SEC = 1000;
 const originImageUrls = {}
+const imageUrls = {};
 let curIndex = 0;
-let imageSet = new Set();
-let imageUrls = new Array(1000);
 let cacheImageEls = document.querySelectorAll(
   imageSeletor
 );
@@ -155,7 +155,6 @@ function startTimer(index, second) {
     clearTimeout();
     return;
   }
-  
   const cacheImageEl = cacheImageEls[index];
   console.log(index)
   if (!(index in originImageUrls)) {
@@ -164,7 +163,12 @@ function startTimer(index, second) {
       mainImageEl.style.backgroundImage = `url(${imageUrls[index]})`;
     } else {
       cacheImageEls[index].click();
-      if (cacheImageEl) {
+      // 중간에서 처음 시작한 경우 원본 이미지 열려있음
+      let originImageEl = document.querySelector(originImageSeletor);
+      
+      if (originImageEl) {
+        originImageUrls[index] = originImageEl.src;
+      } else if (cacheImageEl) {
         originImageUrls[index] = cacheImageEl.src;
       }
     }
@@ -207,28 +211,24 @@ function stopTimer() {
 }
 
 function init(status, interval, startIndex) {
-  imageUrls = new Array(1000);
-  imageSet = new Set();
-
   if (cacheImageEls.length === 0) {
     return;
   }
   if (status) {
-    observer.observe(targetNode, config);
     layer.style.visibility = `visible`;
     startTimer(startIndex, SETTING_TIME);
   } else {
-    observer.disconnect();
+    // observer.disconnect();
     layer.style.visibility = `hidden`;
     clearTimes();
   }
 }
 
-// [...cacheImageEls].map((imageAEl, index) => {
-//   imageAEl.addEventListener(`click`, () => {
-//     curIndex = index;
-//   });
-// });
+[...cacheImageEls].map((imageAEl, index) => {
+  imageAEl.addEventListener(`click`, () => {
+    curIndex = index;
+  });
+});
 
 function mutationCallback(mutationsList, observer) {
   let lastMutaion;
@@ -246,15 +246,13 @@ function mutationCallback(mutationsList, observer) {
     }
   }
   if (lastMutaion && lastMutaion.target) {
-    if (!imageSet.has(lastMutaion.target.currentSrc)) {
-      imageUrls[curIndex] = lastMutaion.target.currentSrc;
-      mainImageEl.style.backgroundImage = `url(${imageUrls[curIndex]})`;
-      originImageUrls[curIndex] = imageUrls[curIndex];
-      imageSet.add(imageUrls[curIndex]);
-    }
+    imageUrls[curIndex] = lastMutaion.target.currentSrc;
+    mainImageEl.style.backgroundImage = `url(${imageUrls[curIndex]})`;
+    originImageUrls[curIndex] = imageUrls[curIndex];
   }
 }
-
+observer.observe(targetNode, config);
+  
 chrome.storage.local.get([`status`], function (result) {
   if (result.length === 0 || result[`status`] === false) {
     init(false, SETTING_TIME, curIndex);
