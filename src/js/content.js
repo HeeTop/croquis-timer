@@ -12,18 +12,21 @@ const stopBtn = document.createElement(`button`);
 const closeBtn = document.createElement(`button`);
 const timeSelectEl = document.createElement(`select`);
 
-const imageSeletor = `#islrg > div.islrc > div > a.wXeWr.islib.nfEiy > div.bRMDJf.islir > img`
-const originImageSeletor = `#Sva75c > div > div > div.pxAole > div.tvh9oe.BIB1wf > c-wiz > div > div.OUZ5W > div.zjoqD > div.qdnLaf.isv-id > div > a > img`
-const restTimeIds = [];
 const SEC = 1000;
-const originImageUrls = {}
-const imageUrls = {};
-let curIndex = 0;
-let cacheImageEls = document.querySelectorAll(
+const imageSeletor = `#islrg > div.islrc > div > a.wXeWr.islib.nfEiy > div.bRMDJf.islir > img`;
+const originImageSeletor = `#Sva75c > div > div > div.pxAole > div.tvh9oe.BIB1wf > c-wiz > div > div.OUZ5W > div.zjoqD > div.qdnLaf.isv-id > div > a > img`;
+  
+// global variable
+const RestTimeIds = [];
+const OriginImageUrls = {};
+const ImageUrls = {};
+let CUR_INDEX = 0;
+let SETTING_TIME = 5;
+let REST_SEC = SETTING_TIME;
+let CacheImageEls = document.querySelectorAll(
   imageSeletor
 );
-let SETTING_TIME = 5;
-let RestTime = SETTING_TIME;
+
 
 function initLayer() {
   layer.id = `croquisTimerLayer`;
@@ -92,7 +95,7 @@ function initSelectBox() {
                             <option value=1800>30 min</option>`;
   timeSelectEl.addEventListener(`change`, ({ target: { selectedIndex } }) => {
     SETTING_TIME = parseInt(timeSelectEl.options[selectedIndex].value);
-    startTimer(curIndex, SETTING_TIME);
+    startTimer(CUR_INDEX, SETTING_TIME);
   });
 }
 initSelectBox();
@@ -112,7 +115,7 @@ function parseTime(second) {
   let sec = second % 60;
   minute = minute.toString().padStart(2, '0');
   sec = sec.toString().padStart(2, `0`);
-  time = minute + `:` + sec + `   index : ` + curIndex.toString();
+  time = minute + `:` + sec + `   index : ` + CUR_INDEX.toString();
   return time;
 }
 function setRestTime(second) {
@@ -120,88 +123,88 @@ function setRestTime(second) {
 }
 
 function clearTimes() {
-  while (restTimeIds.length) {
-    clearInterval(restTimeIds.pop());
+  while (RestTimeIds.length) {
+    clearInterval(RestTimeIds.pop());
   }
 }
 
 function intervalTimer() {
-  if (RestSecond <= 0) {
+  if (REST_SEC <= 0) {
     // next image
     clearTimes();
-    startTimer(curIndex + 1, SETTING_TIME);
+    startTimer(CUR_INDEX + 1, SETTING_TIME);
     return;
   }
-  RestSecond--;
-  setRestTime(RestSecond);
+  REST_SEC--;
+  setRestTime(REST_SEC);
 }
 
 function startInterval(second) {
   clearTimes();
-  RestSecond = second;
+  REST_SEC = second;
   restTimeId = setInterval(() => intervalTimer(), SEC);
-  restTimeIds.push(restTimeId);
+  RestTimeIds.push(restTimeId);
 }
 
 function startTimer(index, second) {
   setRestTime(second);
-  curIndex = index;
+  CUR_INDEX = index;
   stopBtn.value = `false`;
   // updateImageAEl();
   if (
-    index >= cacheImageEls.length ||
-    cacheImageEls[index] === undefined
+    index >= CacheImageEls.length ||
+    CacheImageEls[index] === undefined
   ) {
     clearTimeout();
     return;
   }
-  const cacheImageEl = cacheImageEls[index];
+  const cacheImageEl = CacheImageEls[index];
   console.log(index)
-  if (!(index in originImageUrls)) {
+  if (!(index in OriginImageUrls)) {
     console.log("no cache!!");
-    if (imageUrls[index]) {
-      mainImageEl.style.backgroundImage = `url(${imageUrls[index]})`;
+    if (ImageUrls[index]) {
+      mainImageEl.style.backgroundImage = `url(${ImageUrls[index]})`;
     } else {
-      cacheImageEls[index].click();
+      CacheImageEls[index].click();
       // 중간에서 처음 시작한 경우 원본 이미지 열려있음
       let originImageEl = document.querySelector(originImageSeletor);
       
       if (originImageEl) {
-        originImageUrls[index] = originImageEl.src;
+        OriginImageUrls[index] = originImageEl.src;
       } else if (cacheImageEl) {
-        originImageUrls[index] = cacheImageEl.src;
+        OriginImageUrls[index] = cacheImageEl.src;
       }
     }
   } 
-  imageUrls[index] = originImageUrls[index];
-  mainImageEl.style.backgroundImage = `url(${imageUrls[index]})`;
+  ImageUrls[index] = OriginImageUrls[index];
+  mainImageEl.style.backgroundImage = `url(${ImageUrls[index]})`;
 
   startInterval(second);
   return;
 }
 
 function getPrev() {
-  if (curIndex === 0) {
+  if (CUR_INDEX === 0) {
     return;
   }
-  curIndex--;
+  CUR_INDEX--;
   clearTimes();
-  startTimer(curIndex, SETTING_TIME);
+  startTimer(CUR_INDEX, SETTING_TIME);
 }
 
 function getNext() {
-  if (curIndex >= cacheImageEls.length) {
+  if (CUR_INDEX >= CacheImageEls.length) {
     return;
   }
-  curIndex++;
+  CUR_INDEX++;
   clearTimes();
-  startTimer(curIndex, SETTING_TIME);
+  startTimer(CUR_INDEX, SETTING_TIME);
 }
 
 function stopTimer() {
   if (stopBtn.value === `true`) {
     // continue
-    startTimer(curIndex, RestSecond);
+    startTimer(CUR_INDEX, REST_SEC);
     stopBtn.value = `false`;
   } else {
     // stop
@@ -211,7 +214,7 @@ function stopTimer() {
 }
 
 function init(status, startIndex) {
-  if (cacheImageEls.length === 0) {
+  if (CacheImageEls.length === 0) {
     return;
   }
   if (status) {
@@ -224,9 +227,9 @@ function init(status, startIndex) {
   }
 }
 
-[...cacheImageEls].map((imageAEl, index) => {
+[...CacheImageEls].map((imageAEl, index) => {
   imageAEl.addEventListener(`click`, () => {
-    curIndex = index;
+    CUR_INDEX = index;
   });
 });
 
@@ -246,18 +249,18 @@ function mutationCallback(mutationsList, observer) {
     }
   }
   if (lastMutaion && lastMutaion.target) {
-    imageUrls[curIndex] = lastMutaion.target.currentSrc;
-    mainImageEl.style.backgroundImage = `url(${imageUrls[curIndex]})`;
-    originImageUrls[curIndex] = imageUrls[curIndex];
+    ImageUrls[CUR_INDEX] = lastMutaion.target.currentSrc;
+    mainImageEl.style.backgroundImage = `url(${ImageUrls[CUR_INDEX]})`;
+    OriginImageUrls[CUR_INDEX] = ImageUrls[CUR_INDEX];
   }
 }
 originImageObserver.observe(originImageTargetNode, config);
   
 chrome.storage.local.get([`status`], function (result) {
   if (result.length === 0 || result[`status`] === false) {
-    init(false, curIndex);
+    init(false, CUR_INDEX);
   } else {
-    init(true, curIndex);
+    init(true, CUR_INDEX);
   }
 });
 
@@ -265,7 +268,7 @@ chrome.storage.onChanged.addListener(function (changes, namespace) {
   for (const key in changes) {
     if (key === `status`) {
       const storageChange = changes[key];
-      init(storageChange.newValue, curIndex);
+      init(storageChange.newValue, CUR_INDEX);
     }
   }
 });
