@@ -248,13 +248,17 @@ function mutationCallback(mutationsList, observer) {
       }
     }
   }
+  // TODO: 스파이더맨 cdn 이미지
   if (lastMutaion && lastMutaion.target) {
     ImageUrls[CUR_INDEX] = lastMutaion.target.currentSrc;
     mainImageEl.style.backgroundImage = `url(${ImageUrls[CUR_INDEX]})`;
     OriginImageUrls[CUR_INDEX] = ImageUrls[CUR_INDEX];
   }
 }
-originImageObserver.observe(originImageTargetNode, config);
+
+if (CacheImageEls.length) {
+  originImageObserver.observe(originImageTargetNode, config);
+}
   
 chrome.storage.local.get([`status`], function (result) {
   if (result.length === 0 || result[`status`] === false) {
