@@ -234,7 +234,7 @@ function init(status, startIndex) {
 });
 
 function mutationCallback(mutationsList, observer) {
-  let lastMutaion;
+  let originImageMutaion;
 
   for (let mutation of mutationsList) {
     if (mutation.type === `attributes`) {
@@ -244,15 +244,17 @@ function mutationCallback(mutationsList, observer) {
         mutation.target.className === `n3VNCb` &&
         mutation.attributeName === `src`
       ) {
-        lastMutaion = mutation;
+        originImageMutaion = mutation;
+        if (originImageMutaion && originImageMutaion.target) {
+          setTimeout(()=>{
+            ImageUrls[CUR_INDEX] = originImageMutaion.target.currentSrc;
+            mainImageEl.style.backgroundImage = `url(${ImageUrls[CUR_INDEX]})`;
+            OriginImageUrls[CUR_INDEX] = ImageUrls[CUR_INDEX];
+          }, 10);
+        }
+        return;
       }
     }
-  }
-  // TODO: 스파이더맨 cdn 이미지
-  if (lastMutaion && lastMutaion.target) {
-    ImageUrls[CUR_INDEX] = lastMutaion.target.currentSrc;
-    mainImageEl.style.backgroundImage = `url(${ImageUrls[CUR_INDEX]})`;
-    OriginImageUrls[CUR_INDEX] = ImageUrls[CUR_INDEX];
   }
 }
 
