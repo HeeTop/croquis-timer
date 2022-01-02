@@ -23,7 +23,7 @@
     "content_scripts": [
         {
             "matches": [
-                "https://www.google.com/search?*"
+                "https://www.google.com/search?q=*"
             ],
             "js": [
                 "js/content.js"
@@ -33,6 +33,7 @@
     ],
     "permissions": [
         "<all_urls>",
-        "storage"
+        "storage",
+        "tabs"
     ]
 }
