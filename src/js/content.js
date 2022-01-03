@@ -162,18 +162,9 @@ function startTimer(index, second) {
   console.log(index)
   if (!(index in OriginImageUrls)) {
     console.log("no cache!!");
-    if (ImageUrls[index]) {
-      mainImageEl.style.backgroundImage = `url(${ImageUrls[index]})`;
-    } else {
-      CacheImageEls[index].click();
-      // 중간에서 처음 시작한 경우 원본 이미지 열려있음
-      let originImageEl = document.querySelector(originImageSeletor);
-      
-      if (originImageEl) {
-        OriginImageUrls[index] = originImageEl.src;
-      } else if (cacheImageEl) {
-        OriginImageUrls[index] = cacheImageEl.src;
-      }
+    CacheImageEls[index].click();
+    if (cacheImageEl) {
+      OriginImageUrls[index] = cacheImageEl.src;
     }
   } 
   ImageUrls[index] = OriginImageUrls[index];
@@ -245,16 +236,19 @@ function mutationCallback(mutationsList, observer) {
         mutation.attributeName === `src`
       ) {
         originImageMutaion = mutation;
-        if (originImageMutaion && originImageMutaion.target) {
-          setTimeout(()=>{
-            ImageUrls[CUR_INDEX] = originImageMutaion.target.currentSrc;
-            mainImageEl.style.backgroundImage = `url(${ImageUrls[CUR_INDEX]})`;
-            OriginImageUrls[CUR_INDEX] = ImageUrls[CUR_INDEX];
-          }, 10);
-        }
-        return;
       }
     }
+  }
+  if (originImageMutaion && originImageMutaion.target) {
+    // originImageMutaion.target.currentSrc 값이 바뀌는 경우 있음
+    // console.log('prev: ' + originImageMutaion.target.currentSrc);
+    setTimeout(()=>{
+      // console.log('after: ' + originImageMutaion.target.currentSrc);
+      // 원본 이미지로 업데이트
+      ImageUrls[CUR_INDEX] = originImageMutaion.target.currentSrc;
+      mainImageEl.style.backgroundImage = `url(${ImageUrls[CUR_INDEX]})`;
+      OriginImageUrls[CUR_INDEX] = ImageUrls[CUR_INDEX];
+    }, 10);
   }
 }
 
