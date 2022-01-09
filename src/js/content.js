@@ -1,6 +1,11 @@
-const originImageObserver = new MutationObserver(mutationCallback);
+// 원본 이미지 observer
+const originImageObserver = new MutationObserver(originMutationCallback);
 const originImageTargetNode = document.getElementById(`Sva75c`);
 const config = { attributes: true, subtree: true };
+// 무한 스크롤 observer
+const scrollObserver = new MutationObserver(scrollMutationCallback);
+const scrollTargetNode = document.querySelector(`#islmp`);
+const scrollConfig = { attributes: true, subtree: true };
 // element
 const mainImageEl = document.createElement(`div`);
 const layer = document.createElement(`div`);
@@ -207,14 +212,13 @@ function init(status, startIndex) {
   }
 }
 
-// TODO: 이미지 추가 시 얘도 업데이트
 [...CacheImageEls].map((imageAEl, index) => {
   imageAEl.addEventListener(`click`, () => {
     CUR_INDEX = index;
   });
 });
 
-function mutationCallback(mutationsList, observer) {
+function originMutationCallback(mutationsList, observer) {
   let originImageMutaion;
 
   for (let mutation of mutationsList) {
@@ -237,9 +241,36 @@ function mutationCallback(mutationsList, observer) {
   }
 }
 
+function scrollMutationCallback(mutationsList, observer) {
+  let scroollMutaion;
+  for (let mutation of mutationsList) {
+    if (
+      mutation.target &&
+      mutation.attributeName === `data-os`
+    ) {
+      scroollMutaion = mutation;
+    }
+  }
+
+  if (scroollMutaion) {
+    let tmpImageEls = document.querySelectorAll(
+      imageSeletor
+    );
+    if (tmpImageEls?.length > CacheImageEls.length) {
+      CacheImageEls = tmpImageEls;
+      [...CacheImageEls].map((imageAEl, index) => {
+        imageAEl.addEventListener(`click`, () => {
+          CUR_INDEX = index;
+        });
+      });
+    }
+  }
+}
+
 // 옵저버 시작
 if (CacheImageEls.length) {
   originImageObserver.observe(originImageTargetNode, config);
+  scrollObserver.observe(scrollTargetNode, scrollConfig);
 }
   
 chrome.storage.local.get([`status`], function (result) {
