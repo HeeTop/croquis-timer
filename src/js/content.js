@@ -13,13 +13,12 @@ const closeBtn = document.createElement(`button`);
 const timeSelectEl = document.createElement(`select`);
 
 const SEC = 1000;
+// 구글 이미지 검색 페이지에서만 동작하도록
 const imageSeletor = `#islrg > div.islrc > div > a.wXeWr.islib.nfEiy > div.bRMDJf.islir > img`;
 const originImageSeletor = `#Sva75c > div > div > div.pxAole > div.tvh9oe.BIB1wf > c-wiz > div > div.OUZ5W > div.zjoqD > div.qdnLaf.isv-id > div > a > img`;
   
 // global variable
 const RestTimeIds = [];
-const OriginImageUrls = {};
-const ImageUrls = {};
 let CUR_INDEX = 0;
 let SETTING_TIME = 5;
 let REST_SEC = SETTING_TIME;
@@ -158,17 +157,7 @@ function startTimer(index, second) {
     clearTimeout();
     return;
   }
-  const cacheImageEl = CacheImageEls[index];
-  console.log(index)
-  if (!(index in OriginImageUrls)) {
-    console.log("no cache!!");
-    CacheImageEls[index].click();
-    if (cacheImageEl) {
-      OriginImageUrls[index] = cacheImageEl.src;
-    }
-  } 
-  ImageUrls[index] = OriginImageUrls[index];
-  mainImageEl.style.backgroundImage = `url(${ImageUrls[index]})`;
+  CacheImageEls[index].click();
 
   startInterval(second);
   return;
@@ -218,6 +207,7 @@ function init(status, startIndex) {
   }
 }
 
+// TODO: 이미지 추가 시 얘도 업데이트
 [...CacheImageEls].map((imageAEl, index) => {
   imageAEl.addEventListener(`click`, () => {
     CUR_INDEX = index;
@@ -239,19 +229,15 @@ function mutationCallback(mutationsList, observer) {
       }
     }
   }
-  if (originImageMutaion && originImageMutaion.target) {
-    // originImageMutaion.target.currentSrc 값이 바뀌는 경우 있음
-    // console.log('prev: ' + originImageMutaion.target.currentSrc);
+
+  if (originImageMutaion?.target) {
     setTimeout(()=>{
-      // console.log('after: ' + originImageMutaion.target.currentSrc);
-      // 원본 이미지로 업데이트
-      ImageUrls[CUR_INDEX] = originImageMutaion.target.currentSrc;
-      mainImageEl.style.backgroundImage = `url(${ImageUrls[CUR_INDEX]})`;
-      OriginImageUrls[CUR_INDEX] = ImageUrls[CUR_INDEX];
-    }, 10);
+      mainImageEl.style.backgroundImage = `url(${originImageMutaion.target.currentSrc})`;
+    },10);
   }
 }
 
+// 옵저버 시작
 if (CacheImageEls.length) {
   originImageObserver.observe(originImageTargetNode, config);
 }
