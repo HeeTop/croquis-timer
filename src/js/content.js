@@ -24,6 +24,7 @@ const originImageSeletor = `#Sva75c > div > div > div.pxAole > div.tvh9oe.BIB1wf
   
 // global variable
 const RestTimeIds = [];
+let START_STATUS=false;
 let CUR_INDEX = 0;
 let SETTING_TIME = 5;
 let REST_SEC = SETTING_TIME;
@@ -122,6 +123,7 @@ function parseTime(second) {
   time = minute + `:` + sec + `   index : ` + CUR_INDEX.toString();
   return time;
 }
+
 function setRestTime(second) {
   restTimeEl.innerHTML = parseTime(second);
 }
@@ -131,10 +133,10 @@ function clearTimes() {
     clearInterval(RestTimeIds.pop());
   }
 }
-
+// 1초마다 시간 시간 감소 -> 0 이면 다음 이미지 실행
 function intervalTimer() {
   if (REST_SEC <= 0) {
-    // next image
+    // 다음 이미지에서 시작
     clearTimes();
     startTimer(CUR_INDEX + 1, SETTING_TIME);
     return;
@@ -146,7 +148,7 @@ function intervalTimer() {
 function startInterval(second) {
   clearTimes();
   REST_SEC = second;
-  restTimeId = setInterval(() => intervalTimer(), SEC);
+  const restTimeId = setInterval(() => intervalTimer(), SEC);
   RestTimeIds.push(restTimeId);
 }
 
@@ -154,7 +156,7 @@ function startTimer(index, second) {
   setRestTime(second);
   CUR_INDEX = index;
   stopBtn.value = `false`;
-  // updateImageAEl();
+
   if (
     index >= CacheImageEls.length ||
     CacheImageEls[index] === undefined
@@ -206,7 +208,6 @@ function init(status, startIndex) {
     layer.style.visibility = `visible`;
     startTimer(startIndex, SETTING_TIME);
   } else {
-    // observer.disconnect();
     layer.style.visibility = `hidden`;
     clearTimes();
   }
@@ -275,17 +276,19 @@ if (CacheImageEls.length) {
   
 chrome.storage.local.get([`status`], function (result) {
   if (result.length === 0 || result[`status`] === false) {
-    init(false, CUR_INDEX);
+    START_STATUS = false;
   } else {
-    init(true, CUR_INDEX);
+    START_STATUS = true;
   }
+  init(START_STATUS, CUR_INDEX);
 });
 
 chrome.storage.onChanged.addListener(function (changes, namespace) {
   for (const key in changes) {
     if (key === `status`) {
       const storageChange = changes[key];
-      init(storageChange.newValue, CUR_INDEX);
+      START_STATUS = storageChange.newValue;
+      init(START_STATUS, CUR_INDEX);
     }
   }
 });
