@@ -206,9 +206,11 @@ function init(status, startIndex) {
   }
   if (status) {
     layer.style.visibility = `visible`;
+    document.body.style.overflow = 'hidden';
     startTimer(startIndex, SETTING_TIME);
   } else {
     layer.style.visibility = `hidden`;
+    document.body.style.overflow = 'visible';
     clearTimes();
   }
 }
