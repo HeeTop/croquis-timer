@@ -45,14 +45,12 @@ function initLayer() {
   layer.style.visibility = `hidden`;
   layer.style.position = `fixed`;
 }
-initLayer();
 
 function initRestTime() {
   restTimeEl.style.color = `gainsboro`;
   restTimeEl.style.fontFamily = `Raleway,sans-serif`;
   restTimeEl.style.fontSize = `1rem`;
 }
-initRestTime();
 
 function initMainImage() {
   mainImageEl.style.display = `block`;
@@ -64,7 +62,6 @@ function initMainImage() {
   mainImageEl.style.backgroundRepeat = `no-repeat`;
   mainImageEl.style.backgroundPosition = `center`;
 }
-initMainImage();
 
 function initBtn() {
   closeBtn.innerText = `X`;
@@ -87,7 +84,6 @@ function initBtn() {
   btnWrapper.appendChild(nextBtn);
   btnWrapper.appendChild(stopBtn);
 }
-initBtn();
 
 function initSelectBox() {
   timeSelectEl.innerHTML = `<option value=15>15 sec</option>
@@ -103,7 +99,6 @@ function initSelectBox() {
     startTimer(CUR_INDEX, SETTING_TIME);
   });
 }
-initSelectBox();
 
 function appendChilds() {
   layer.appendChild(restTimeEl);
@@ -113,7 +108,6 @@ function appendChilds() {
   layer.appendChild(timeSelectEl);
   document.body.appendChild(layer);
 }
-appendChilds();
 
 function parseTime(second) {
   let minute = Math.floor(second / 60);
@@ -165,7 +159,6 @@ function startTimer(index, second) {
     return;
   }
   CacheImageEls[index].click();
-  mainImageEl.style.backgroundImage = `url(${CacheImageEls[index].src})`;
   startInterval(second);
   return;
 }
@@ -215,11 +208,14 @@ function init(status, startIndex) {
   }
 }
 
-[...CacheImageEls].map((imageAEl, index) => {
-  imageAEl.addEventListener(`click`, () => {
-    CUR_INDEX = index;
+function setCacheImageEls() {
+  [...CacheImageEls].map((imageAEl, index) => {
+    imageAEl.addEventListener(`click`, () => {
+      CUR_INDEX = index;
+      mainImageEl.style.backgroundImage = `url(${CacheImageEls[index].src})`;
+    });
   });
-});
+}
 
 function originMutationCallback(mutationsList, observer) {
   let originImageMutaion;
@@ -260,18 +256,20 @@ function scrollMutationCallback(mutationsList, observer) {
       imageSeletor
     );
     if (tmpImageEls?.length > CacheImageEls.length) {
-      CacheImageEls = tmpImageEls;
-      [...CacheImageEls].map((imageAEl, index) => {
-        imageAEl.addEventListener(`click`, () => {
-          CUR_INDEX = index;
-        });
-      });
+      setCacheImageEls() ;
     }
   }
 }
 
-// 옵저버 시작
+// 옵저버 시작 & 초기화
 if (CacheImageEls.length) {
+  initLayer();
+  initRestTime();
+  initMainImage();
+  initBtn();
+  initSelectBox();
+  appendChilds();
+  setCacheImageEls();
   originImageObserver.observe(originImageTargetNode, config);
   scrollObserver.observe(scrollTargetNode, scrollConfig);
 }
