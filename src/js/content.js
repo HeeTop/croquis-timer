@@ -165,7 +165,7 @@ function startTimer(index, second) {
     return;
   }
   CacheImageEls[index].click();
-
+  mainImageEl.style.backgroundImage = `url(${CacheImageEls[index].src})`;
   startInterval(second);
   return;
 }
