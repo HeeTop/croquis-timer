@@ -28,9 +28,7 @@ let START_STATUS=false;
 let CUR_INDEX = 0;
 let SETTING_TIME = 5;
 let REST_SEC = SETTING_TIME;
-let CacheImageEls = document.querySelectorAll(
-  imageSeletor
-);
+let CacheImageEls = document.querySelectorAll(imageSeletor);
 
 
 function initLayer() {
@@ -209,6 +207,7 @@ function init(status, startIndex) {
 }
 
 function setCacheImageEls() {
+  CacheImageEls = document.querySelectorAll(imageSeletor);
   [...CacheImageEls].map((imageAEl, index) => {
     imageAEl.addEventListener(`click`, () => {
       CUR_INDEX = index;
@@ -256,6 +255,7 @@ function scrollMutationCallback(mutationsList, observer) {
       imageSeletor
     );
     if (tmpImageEls?.length > CacheImageEls.length) {
+      console.log(`more`);
       setCacheImageEls() ;
     }
   }
