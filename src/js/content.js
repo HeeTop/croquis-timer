@@ -66,8 +66,9 @@ function initBtn() {
   closeBtn.style.position = `absolute`;
   closeBtn.style.right = `0px`;
   closeBtn.style.top = `0px`;
+  // 크로키 타이머 종료
   closeBtn.addEventListener(`click`, () => {
-    chrome.storage.local.set({ status: false });
+    init(false, CUR_INDEX);
   });
   preBtn.innerText = `pre`;
   preBtn.addEventListener(`click`, () => getPrev());
@@ -273,22 +274,17 @@ if (CacheImageEls.length) {
   originImageObserver.observe(originImageTargetNode, config);
   scrollObserver.observe(scrollTargetNode, scrollConfig);
 }
-  
-chrome.storage.local.get([`status`], function (result) {
-  if (result.length === 0 || result[`status`] === false) {
-    START_STATUS = false;
-  } else {
-    START_STATUS = true;
-  }
-  init(START_STATUS, CUR_INDEX);
-});
 
-chrome.storage.onChanged.addListener(function (changes, namespace) {
-  for (const key in changes) {
-    if (key === `status`) {
-      const storageChange = changes[key];
-      START_STATUS = storageChange.newValue;
-      init(START_STATUS, CUR_INDEX);
-    }
+// 크로키 새탭에서 시작
+chrome.storage.local.get(['tab'], (result)=>{
+  if (result?.tab) {
+    // tab id가 저장된 탭과 같을 때만 실행
+    chrome.runtime.sendMessage({ q: `requestTabId` }, tabId => {
+      if (result?.tab?.id == tabId) {
+        init(true, CUR_INDEX);
+        // 스토리지 초기화
+        chrome.storage.local.set({tab: null}); 
+      }
+    });
   }
 });

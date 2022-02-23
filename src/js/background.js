@@ -1,28 +1,23 @@
-chrome.storage.local.set({status: false}, function() {
-  console.log('init storage');
-});
+const URL_HEAD = `https://www.google.com/search?q=`;
+const URL_TAIL = `&newwindow=1&hl=en&sxsrf=APq-WBvDEv1q59l71d9a-17jhvopn1ZQmw:1645615769499&source=lnms&tbm=isch&sa=X&ved=2ahUKEwizuIK73JX2AhUG4WEKHcVmBDgQ_AUoAXoECAEQAw&biw=2560&bih=1304&dpr=2`;
 
 chrome.storage.onChanged.addListener(function(changes, namespace) {
-  const statusChange = changes[`status`];
-  if (statusChange) {
-    if (statusChange.oldValue == statusChange.newValue) {
-      return
+  const queryChange = changes[`query`];
+  if (queryChange.newValue) {
+    if (queryChange.oldValue == queryChange.newValue) {
+      return;
     }
-    // 전체 화면 설정
-    chrome.windows.getCurrent(function(curWindow) {
-      // 크로키 시작
-      if (statusChange.newValue) {
-        // 전체 화면 여부 저장
-        chrome.storage.local.set({winStatus: curWindow.state});
-        chrome.windows.update(curWindow.id, { state: `fullscreen` });
-      } else {
-        chrome.storage.local.get(['winStatus'], function(result) {
-          if (result.length === 0) {
-            return;
-          }
-          chrome.windows.update(curWindow.id, { state: result[`winStatus`] });
-        });
-      }
+    const requestURL = [URL_HEAD, queryChange?.newValue, URL_TAIL].join(``);
+    chrome.tabs.create({ url: requestURL}, tab=>{
+      chrome.storage.local.set({tab: tab});
+      // 쿼리 초기화
+      chrome.storage.local.set({query: null});
     });
   }
+});
+
+chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
+  if (msg.q == `requestTabId`) {
+      sendResponse(sender.tab.id);
+   }
 });
