@@ -29,6 +29,7 @@ let START_STATUS=false;
 let CUR_INDEX = 0;
 let SETTING_TIME = 5;
 let REST_SEC = SETTING_TIME;
+let IS_START_SELETED = false;
 let CacheImageEls = document.querySelectorAll(imageSeletor);
 
 
@@ -158,7 +159,12 @@ function startTimer(index, second) {
     clearTimeout();
     return;
   }
-  CacheImageEls[index].click();
+  // 중간부터 시작하는 경우 이미지 클릭 없이 현재 보여지는 이미지를 Background image로 사용
+  if (IS_START_SELETED) {
+    IS_START_SELETED = false;
+  } else {
+    CacheImageEls[index].click();
+  }
   startInterval(second);
   return;
 }
@@ -235,12 +241,13 @@ function originMutationCallback(mutationsList, observer) {
   }
 
   if (originImageMutaion?.target) {
-    // 선택한 이미지에서 시작 버튼 addEventListener
+    // 선택한 이미지에서 시작
     const startBtn = document.querySelector(startBtnSeletor);
-
     startBtn.addEventListener(`click`, () => {
+      IS_START_SELETED = true;
       init(true, CUR_INDEX);
     });
+
     setTimeout(()=>{
       mainImageEl.style.backgroundImage = `url(${originImageMutaion.target.currentSrc})`;
     },10);
