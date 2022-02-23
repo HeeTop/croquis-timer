@@ -1,3 +1,6 @@
 document.querySelector(`#start`).addEventListener(`click`, () => {
-  chrome.storage.local.set({query: 'bar'});
+  const query = document.querySelector(`#searchbar`).value;
+  if (query) {
+    chrome.storage.local.set({query: query});
+  }
 });

@@ -1,17 +1,20 @@
 <!DOCTYPE html>
 <html lang="ko">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title i18n-content="APP_NAME"></title>
-  <link href="css/reset.css" type="text/css" rel="stylesheet"/>
-  <link href="css/index.css" type="text/css" rel="stylesheet"/>
-</head>
-<body>
-  <div class="title" i18n-content="APP_NAME"></div>
-	<div class="description" i18n-content="APP_DESCRIPTION"></div>
-	<button id="start">on/off</button>
-  <script src="js/i18n-contents.js"></script>
-  <script src="js/index.js"></script>
-</body>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title i18n-content="APP_NAME"></title>
+    <link href="css/reset.css" type="text/css" rel="stylesheet"/>
+    <link href="css/index.css" type="text/css" rel="stylesheet"/>
+  </head>
+  <body>
+    <div class="title" i18n-content="APP_NAME"></div>
+    <div class="description" i18n-content="APP_DESCRIPTION"></div>
+    <form>
+      <input type="text" placeholder="Search.." name="search" id="searchbar">
+      <button type="submit" id="start">submit</button>
+    </form>
+    <script src="js/i18n-contents.js"></script>
+    <script src="js/index.js"></script>
+  </body>
 </html>
