@@ -21,7 +21,8 @@ const SEC = 1000;
 // 구글 이미지 검색 페이지에서만 동작하도록
 const imageSeletor = `#islrg > div.islrc > div > a.wXeWr.islib.nfEiy > div.bRMDJf.islir > img`;
 const originImageSeletor = `#Sva75c > div > div > div.pxAole > div.tvh9oe.BIB1wf > c-wiz > div > div.OUZ5W > div.zjoqD > div.qdnLaf.isv-id > div > a > img`;
-  
+const startBtnSeletor = `#Sva75c > div > div > div.pxAole > div.tvh9oe.BIB1wf > c-wiz > div > div.OUZ5W > div.zjoqD > div.fDqwl > a.SIwKhe.D9XNA`;
+
 // global variable
 const RestTimeIds = [];
 let START_STATUS=false;
@@ -234,6 +235,12 @@ function originMutationCallback(mutationsList, observer) {
   }
 
   if (originImageMutaion?.target) {
+    // 선택한 이미지에서 시작 버튼 addEventListener
+    const startBtn = document.querySelector(startBtnSeletor);
+
+    startBtn.addEventListener(`click`, () => {
+      init(true, CUR_INDEX);
+    });
     setTimeout(()=>{
       mainImageEl.style.backgroundImage = `url(${originImageMutaion.target.currentSrc})`;
     },10);
