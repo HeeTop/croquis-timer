@@ -29,7 +29,6 @@ let START_STATUS=false;
 let CUR_INDEX = 0;
 let SETTING_TIME = 5;
 let REST_SEC = SETTING_TIME;
-let IS_START_SELETED = false;
 let CacheImageEls = document.querySelectorAll(imageSeletor);
 
 
@@ -70,7 +69,7 @@ function initBtn() {
   closeBtn.style.top = `0px`;
   // 크로키 타이머 종료
   closeBtn.addEventListener(`click`, () => {
-    init(false, CUR_INDEX);
+    init(false);
   });
   preBtn.innerText = `pre`;
   preBtn.addEventListener(`click`, () => getPrev());
@@ -132,7 +131,6 @@ function clearTimes() {
 function intervalTimer() {
   if (REST_SEC <= 0) {
     // 다음 이미지에서 시작
-    clearTimes();
     startTimer(CUR_INDEX + 1, SETTING_TIME);
     return;
   }
@@ -147,7 +145,8 @@ function startInterval(second) {
   RestTimeIds.push(restTimeId);
 }
 
-function startTimer(index, second) {
+function startTimer(index, second, isStartSelected = false) {
+  clearTimes();
   setRestTime(second);
   CUR_INDEX = index;
   stopBtn.value = `false`;
@@ -156,13 +155,10 @@ function startTimer(index, second) {
     index >= CacheImageEls.length ||
     CacheImageEls[index] === undefined
   ) {
-    clearTimeout();
     return;
   }
   // 중간부터 시작하는 경우 이미지 클릭 없이 현재 보여지는 이미지를 Background image로 사용
-  if (IS_START_SELETED) {
-    IS_START_SELETED = false;
-  } else {
+  if (isStartSelected == false) {
     CacheImageEls[index].click();
   }
   startInterval(second);
@@ -174,7 +170,6 @@ function getPrev() {
     return;
   }
   CUR_INDEX--;
-  clearTimes();
   startTimer(CUR_INDEX, SETTING_TIME);
 }
 
@@ -183,14 +178,13 @@ function getNext() {
     return;
   }
   CUR_INDEX++;
-  clearTimes();
   startTimer(CUR_INDEX, SETTING_TIME);
 }
 
 function stopTimer() {
   if (stopBtn.value === `true`) {
     // continue
-    startTimer(CUR_INDEX, REST_SEC);
+    startTimer(CUR_INDEX, REST_SEC, true);
     stopBtn.value = `false`;
   } else {
     // stop
@@ -199,14 +193,14 @@ function stopTimer() {
   }
 }
 
-function init(status, startIndex) {
+function init(status,  isStartSelected = false, startIndex = 0) {
   if (CacheImageEls.length === 0) {
     return;
   }
   if (status) {
     layer.style.visibility = `visible`;
     document.body.style.overflow = 'hidden';
-    startTimer(startIndex, SETTING_TIME);
+    startTimer(startIndex, SETTING_TIME, isStartSelected);
   } else {
     layer.style.visibility = `hidden`;
     document.body.style.overflow = 'visible';
@@ -244,12 +238,13 @@ function originMutationCallback(mutationsList, observer) {
     // 선택한 이미지에서 시작
     const startBtn = document.querySelector(startBtnSeletor);
     startBtn.addEventListener(`click`, () => {
-      IS_START_SELETED = true;
-      init(true, CUR_INDEX);
+      init(true, true, CUR_INDEX);
     });
 
     setTimeout(()=>{
       mainImageEl.style.backgroundImage = `url(${originImageMutaion.target.currentSrc})`;
+      // TODO: 원본 이미지가 로딩이 끝난 다음 다시 타이머 초기화
+      // startTimer(CUR_INDEX, SETTING_TIME, true);
     },10);
   }
 }
@@ -295,7 +290,7 @@ chrome.storage.local.get(['tab'], (result)=>{
     // tab id가 저장된 탭과 같을 때만 실행
     chrome.runtime.sendMessage({ q: `requestTabId` }, tabId => {
       if (result?.tab?.id == tabId) {
-        init(true, CUR_INDEX);
+        init(true);
         // 스토리지 초기화
         chrome.storage.local.set({tab: null}); 
       }
