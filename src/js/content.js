@@ -3,7 +3,7 @@ const originImageObserver = new MutationObserver(originMutationCallback);
 const originImageTargetNode = document.getElementById(`Sva75c`);
 const config = { attributes: true, subtree: true };
 // 무한 스크롤 observer
-const scrollObserver = new MutationObserver(scrollMutationCallback);
+// const scrollObserver = new MutationObserver(scrollMutationCallback);
 const scrollTargetNode = document.querySelector(`#islmp`);
 const scrollConfig = { attributes: true, subtree: true };
 // element
@@ -22,11 +22,11 @@ const SEC = 1000;
 const imageSeletor = `#islrg > div.islrc > div > a.wXeWr.islib.nfEiy > div.bRMDJf.islir > img`;
 const originImageSeletor = `#Sva75c > div > div > div.pxAole > div.tvh9oe.BIB1wf > c-wiz > div > div.OUZ5W > div.zjoqD > div.qdnLaf.isv-id > div > a > img`;
 const startBtnSeletor = `#Sva75c > div > div > div.pxAole > div.tvh9oe.BIB1wf > c-wiz > div > div.OUZ5W > div.zjoqD > div.fDqwl > a.SIwKhe.D9XNA`;
-
+const nextBtnSeletor = `#Sva75c > div > div > div.pxAole > div.tvh9oe.BIB1wf > c-wiz > div > div.OUZ5W > div.zjoqD > div.fDqwl > a.knIqbf.SIwKhe`
+const prevBtnSeletor = `#Sva75c > div > div > div.pxAole > div.tvh9oe.BIB1wf > c-wiz > div > div.OUZ5W > div.zjoqD > div.fDqwl > a.AWxjD.SIwKhe`
 // global variable
 const RestTimeIds = [];
 let START_STATUS=false;
-let CUR_INDEX = 0;
 let SETTING_TIME = 5;
 let REST_SEC = SETTING_TIME;
 let CacheImageEls = document.querySelectorAll(imageSeletor);
@@ -96,7 +96,7 @@ function initSelectBox() {
                             <option value=1800>30 min</option>`;
   timeSelectEl.addEventListener(`change`, ({ target: { selectedIndex } }) => {
     SETTING_TIME = parseInt(timeSelectEl.options[selectedIndex].value);
-    startTimer(CUR_INDEX, SETTING_TIME);
+    startTimer(SETTING_TIME);
   });
 }
 
@@ -114,11 +114,11 @@ function parseTime(second) {
   let sec = second % 60;
   minute = minute.toString().padStart(2, '0');
   sec = sec.toString().padStart(2, `0`);
-  time = minute + `:` + sec + `   index : ` + CUR_INDEX.toString();
+  time = minute + `:` + sec;
   return time;
 }
 
-function setRestTime(second) {
+function updateRestTime(second) {
   restTimeEl.innerHTML = parseTime(second);
 }
 
@@ -130,12 +130,13 @@ function clearTimes() {
 // 1초마다 시간 시간 감소 -> 0 이면 다음 이미지 실행
 function intervalTimer() {
   if (REST_SEC <= 0) {
-    // 다음 이미지에서 시작
-    startTimer(CUR_INDEX + 1, SETTING_TIME);
+    // 다음 이미지 클릭후 시작
+    document.querySelector(nextBtnSeletor).click();
+    startTimer(SETTING_TIME);
     return;
   }
   REST_SEC--;
-  setRestTime(REST_SEC);
+  updateRestTime(REST_SEC);
 }
 
 function startInterval(second) {
@@ -145,46 +146,29 @@ function startInterval(second) {
   RestTimeIds.push(restTimeId);
 }
 
-function startTimer(index, second, isStartSelected = false) {
+function startTimer(second, isStartSelected = false) {
   clearTimes();
   setRestTime(second);
-  CUR_INDEX = index;
   stopBtn.value = `false`;
 
-  if (
-    index >= CacheImageEls.length ||
-    CacheImageEls[index] === undefined
-  ) {
-    return;
-  }
-  // 중간부터 시작하는 경우 이미지 클릭 없이 현재 보여지는 이미지를 Background image로 사용
-  if (isStartSelected == false) {
-    CacheImageEls[index].click();
-  }
   startInterval(second);
   return;
 }
 
 function getPrev() {
-  if (CUR_INDEX === 0) {
-    return;
-  }
-  CUR_INDEX--;
-  startTimer(CUR_INDEX, SETTING_TIME);
+  document.querySelector(prevBtnSeletor).click();
+  startTimer(SETTING_TIME);
 }
 
 function getNext() {
-  if (CUR_INDEX >= CacheImageEls.length) {
-    return;
-  }
-  CUR_INDEX++;
-  startTimer(CUR_INDEX, SETTING_TIME);
+  document.querySelector(nextBtnSeletor).click();
+  startTimer(SETTING_TIME);
 }
 
 function stopTimer() {
   if (stopBtn.value === `true`) {
     // continue
-    startTimer(CUR_INDEX, REST_SEC, true);
+    startTimer(REST_SEC);
     stopBtn.value = `false`;
   } else {
     // stop
@@ -193,14 +177,11 @@ function stopTimer() {
   }
 }
 
-function init(status,  isStartSelected = false, startIndex = 0) {
-  if (CacheImageEls.length === 0) {
-    return;
-  }
+function init(status,  isStartSelected = false) {
   if (status) {
     layer.style.visibility = `visible`;
     document.body.style.overflow = 'hidden';
-    startTimer(startIndex, SETTING_TIME, isStartSelected);
+    startTimer(SETTING_TIME);
   } else {
     layer.style.visibility = `hidden`;
     document.body.style.overflow = 'visible';
@@ -238,36 +219,15 @@ function originMutationCallback(mutationsList, observer) {
     // 선택한 이미지에서 시작
     const startBtn = document.querySelector(startBtnSeletor);
     startBtn.addEventListener(`click`, () => {
-      init(true, true, CUR_INDEX);
+      init(true, true);
     });
 
     setTimeout(()=>{
       mainImageEl.style.backgroundImage = `url(${originImageMutaion.target.currentSrc})`;
+      console.log(originImageMutaion.target.currentSrc);
       // TODO: 원본 이미지가 로딩이 끝난 다음 다시 타이머 초기화
       // startTimer(CUR_INDEX, SETTING_TIME, true);
     },10);
-  }
-}
-
-function scrollMutationCallback(mutationsList, observer) {
-  let scroollMutaion;
-  for (let mutation of mutationsList) {
-    if (
-      mutation.target &&
-      mutation.attributeName === `data-os`
-    ) {
-      scroollMutaion = mutation;
-    }
-  }
-
-  if (scroollMutaion) {
-    let tmpImageEls = document.querySelectorAll(
-      imageSeletor
-    );
-    if (tmpImageEls?.length > CacheImageEls.length) {
-      console.log(`more`);
-      setCacheImageEls() ;
-    }
   }
 }
 
@@ -279,7 +239,6 @@ if (CacheImageEls.length) {
   initBtn();
   initSelectBox();
   appendChilds();
-  setCacheImageEls();
   originImageObserver.observe(originImageTargetNode, config);
   scrollObserver.observe(scrollTargetNode, scrollConfig);
 }
